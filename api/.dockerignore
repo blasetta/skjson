@@ -1,0 +1,9 @@
+# This file prevents local files from being copied into the Docker image.
+# It helps keep the image small and the build process fast.
+
+# Don't copy the local node_modules directory.
+# The Dockerfile will run `npm ci` to install dependencies inside the container.
+node_modules
+
+# Log files
+npm-debug.log*

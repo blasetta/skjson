@@ -1,0 +1,902 @@
+[
+  {
+    "number": 101,
+    "title": "Orchestrating a Scalable Generative AI Training Workflow",
+    "level": 2,
+    "services": ["Vertex AI Pipelines", "TensorFlow Extended (TFX)", "Kubeflow Pipelines (KFP)"],
+    "scenario": "You are tasked with productionizing a text-to-image diffusion model in TensorFlow. The training dataset consists of billions of image-caption pairs stored in a Cloud Storage bucket. You need a managed, low-maintenance, automated workflow to orchestrate the entire process: data ingestion, statistical analysis (e.g., using TFDV), data splitting and transformation, distributed model training, and finally, model validation on a hold-out test set.",
+    "questionText": "Which SDK and platform combination is most suitable for building this automated workflow on Google Cloud?",
+    "isMultiChoice": 0,
+    "options": [
+      {
+        "letter": "A",
+        "text": "Use the Apache Airflow SDK to define a DAG with operators for Dataflow and Vertex AI services, then deploy and manage it on a Cloud Composer environment."
+      },
+      {
+        "letter": "B",
+        "text": "Use the Kubeflow Pipelines (KFP) SDK to define a pipeline with custom components that wrap Dataflow for preprocessing and a Vertex AI CustomJob for training. Deploy the compiled pipeline to Vertex AI Pipelines."
+      },
+      {
+        "letter": "C",
+        "text": "Use the TensorFlow Extended (TFX) SDK to define a pipeline using its standard components (e.g., ExampleGen, StatisticsGen, Trainer). Deploy the compiled pipeline to Vertex AI Pipelines, configuring Dataflow as the processing backend."
+      },
+      {
+        "letter": "D",
+        "text": "Use MLFlow Tracking to log parameters and metrics from a master script. Orchestrate the script's execution, which calls Dataflow and Vertex AI services, using a Cloud Scheduler job."
+      }
+    ],
+    "correctAnswers": ["C"],
+    "explanation": "Why C is correct: The scenario involves a massive dataset of 'billions of images with captions' and a standard MLOps workflow (statistics, split, transform, train, validate). TensorFlow Extended (TFX) is specifically designed and recommended by Google for these large-scale, end-to-end ML workflows, especially for structured data and text, but its components are also highly effective for managing large-scale image data pipelines. TFX provides a robust, standardized set of components for each step, which integrates seamlessly with Dataflow for scalable processing and Vertex AI for training and orchestration. This is the most complete and standardized solution for the described problem. \n\nOfficial Documentation: [TFX on Google Cloud](https://cloud.google.com/solutions/tfx-on-google-cloud)",
+    "wrongExplanation": "Why the others are wrong: \nA: While Cloud Composer can orchestrate ML workflows, Vertex AI Pipelines is the more modern, tightly integrated, and purpose-built service for MLOps on Google Cloud, generally requiring less infrastructure management. \nB: Kubeflow Pipelines (KFP) is a more general-purpose workflow orchestrator. While you could build this pipeline with KFP, you would be re-implementing much of the standardized functionality that TFX provides out-of-the-box (like data validation, schema generation, etc.), leading to more custom code. \nD: MLFlow is primarily a tool for experiment tracking and model management, not a full-fledged pipeline orchestration framework like TFX or KFP."
+  },
+  {
+    "number": 102,
+    "title": "Rapid Sales Forecasting for Short-Lifecycle Products",
+    "level": 1,
+    "services": ["BigQuery ML", "Vertex AI Forecast", "Vertex AI Training"],
+    "scenario": "An online retailer needs to forecast monthly sales for thousands of products, many of which have short lifecycles. All five years of historical sales data are stored in a BigQuery table. The primary goal is to generate these forecasts with a solution that is extremely fast to implement and requires minimal custom coding or data movement.",
+    "questionText": "Which approach should you take to meet these requirements?",
+    "isMultiChoice": 0,
+    "options": [
+      {
+        "letter": "A",
+        "text": "Export the data from BigQuery and use Vertex AI Forecast, which leverages advanced neural network models for high accuracy."
+      },
+      {
+        "letter": "B",
+        "text": "Use a Vertex AI Workbench notebook to train a custom Prophet model on the data exported from BigQuery."
+      },
+      {
+        "letter": "C",
+        "text": "Use BigQuery ML to train an `ARIMA_PLUS` model directly on the data using a single SQL `CREATE MODEL` statement."
+      },
+      {
+        "letter": "D",
+        "text": "Write a custom TensorFlow model using LSTMs, and train it on Vertex AI Training, reading data directly from BigQuery."
+      }
+    ],
+    "correctAnswers": ["C"],
+    "explanation": "Why C is correct: The key constraints are that the data resides in BigQuery and the solution must be fast with minimal effort. BigQuery ML is the only option that meets these perfectly. It allows you to train powerful forecasting models like `ARIMA_PLUS` directly within the data warehouse using simple SQL commands. This eliminates the need for data movement, infrastructure setup, or writing Python code, making it by far the quickest and easiest path from data to a production-ready forecasting model. \n\nOfficial Documentation: [The CREATE MODEL statement for time series models](https://cloud.google.com/bigquery-ml/docs/reference/standard-sql/bigqueryml-syntax-create-time-series)",
+    "wrongExplanation": "Why the others are wrong: \nA, B, and D: All these options require significantly more effort. They involve exporting data from BigQuery, setting up separate training environments in Vertex AI, and writing custom Python code. While they offer high degrees of customization, they fail the primary requirements of speed and minimal implementation effort."
+  },
+  {
+    "number": 103,
+    "title": "Assembling a Custom Text Model Training Pipeline on Vertex AI",
+    "level": 2,
+    "services": ["Vertex AI Pipelines"],
+    "scenario": "You are building an automated pipeline on Vertex AI to train a custom sentiment analysis model on text-based product reviews. You need full control over the model's architecture and hyperparameter tuning process. After a successful training run, the resulting model artifact must be registered and deployed to a new Vertex AI Endpoint.",
+    "questionText": "Which sequence of Google Cloud Pipeline Components is correct for this workflow?",
+    "isMultiChoice": 0,
+    "options": [
+      {
+        "letter": "A",
+        "text": "`TabularDatasetCreateOp`, `CustomTrainingJobOp`, `EndpointCreateOp`, `ModelDeployOp`"
+      },
+      {
+        "letter": "B",
+        "text": "`TextDatasetCreateOp`, `AutoMLTextTrainingJobRunOp`, `ModelDeployOp`"
+      },
+      {
+        "letter": "C",
+        "text": "`TextDatasetCreateOp`, `CustomTrainingJobOp`, `ModelUploadOp`, `EndpointCreateOp`, `ModelDeployOp`"
+      },
+      {
+        "letter": "D",
+        "text": "`TextDatasetCreateOp`, `CustomContainerTrainingJobRunOp`, `ModelDeployOp`"
+      }
+    ],
+    "correctAnswers": ["D"],
+    "explanation": "Why D is correct: This option correctly identifies the components for a custom model workflow. 1. **`TextDatasetCreateOp`**: Correct for creating a dataset from text-based reviews. 2. **`CustomContainerTrainingJobRunOp`**: This is the appropriate component for running a custom training job where you have full control over the model architecture and tuning, as specified. It expects you to provide a custom container with your training code. 3. **`ModelDeployOp`**: This single component elegantly handles both uploading the model artifact to the Vertex AI Model Registry and deploying it to a new or existing endpoint. The other options contain redundant or incorrect components. \n\nOfficial Documentation: [Google Cloud Pipeline Components Reference](https://google-cloud-pipeline-components.readthedocs.io/en/google-cloud-pipeline-components-2.0.0/)",
+    "wrongExplanation": "Why the others are wrong: \nA: `TabularDatasetCreateOp` is for structured data, not text. Also, `EndpointCreateOp` and `ModelDeployOp` are separate; `ModelDeployOp` can create the endpoint itself, making the former redundant. \nB: `AutoMLTextTrainingJobRunOp` cedes control over architecture and tuning to AutoML, which violates a key requirement. \nC: This sequence is redundant. The `ModelDeployOp` can handle the model upload and endpoint creation internally, so separate `ModelUploadOp` and `EndpointCreateOp` steps are unnecessary and add complexity."
+  },
+  {
+    "number": 104,
+    "title": "Configuring a Foundational CI Trigger for Model Retraining",
+    "level": 1,
+    "services": ["Cloud Build", "Cloud Source Repositories"],
+    "scenario": "Your data science team uses a single Cloud Source Repository for all ML model experimentation and development. You need to establish a foundational Continuous Integration (CI) pipeline using Cloud Build. The pipeline must be triggered automatically to retrain and test a model whenever any code modification is saved to the repository.",
+    "questionText": "What is the most direct and appropriate first step to configure this CI trigger?",
+    "isMultiChoice": 0,
+    "options": [
+      {
+        "letter": "A",
+        "text": "Configure a Cloud Build trigger with the event type set to 'Pull Request' targeting the main branch."
+      },
+      {
+        "letter": "B",
+        "text": "Configure a Cloud Build trigger with the event type set to 'Push to a branch'."
+      },
+      {
+        "letter": "C",
+        "text": "Write a Cloud Function with a Source Repository trigger that manually invokes the Cloud Build API."
+      },
+      {
+        "letter": "D",
+        "text": "Configure a Pub/Sub notification on the repository and a Cloud Build trigger that subscribes to that topic."
+      }
+    ],
+    "correctAnswers": ["B"],
+    "explanation": "Why B is correct: The requirement is to trigger a pipeline upon 'any modification of the code'. In a Git workflow, a code modification is officially recorded in the repository via a `git push` operation. Therefore, setting the Cloud Build trigger's event to 'Push to a branch' is the canonical and most comprehensive method. This ensures that every single commit pushed to any branch (or a specific branch, if filtered) will automatically start the CI pipeline. \n\nOfficial Documentation: [Creating and managing build triggers](https://cloud.google.com/build/docs/automating-builds/create-manage-triggers)",
+    "wrongExplanation": "Why the others are wrong: \nA: Triggering on 'Pull Request' is a common practice for validation before a merge, but it wouldn't trigger on direct pushes to a branch that are not part of a PR, thus missing some modifications. \nC & D: These are overly complex, indirect methods. Cloud Build has a native, direct integration with source repositories, making intermediate services like Cloud Functions or Pub/Sub unnecessary for this basic trigger."
+  },
+  {
+    "number": 105,
+    "title": "Diagnosing Autoscaling Failures in Memory-Bound Endpoints",
+    "level": 3,
+    "services": ["Vertex AI Endpoints"],
+    "scenario": "You've deployed a custom model to a Vertex AI endpoint. The model's prediction logic involves several memory-intensive preprocessing steps. After deploying with default autoscaling settings, you observe that under concurrent load, the endpoint fails to scale out and instead starts returning errors, even though CPU metrics remain moderate.",
+    "questionText": "What is the most likely cause and the correct solution?",
+    "isMultiChoice": 0,
+    "options": [
+      {
+        "letter": "A",
+        "text": "The model is CPU-bound. Increase the machine size to a compute-optimized type."
+      },
+      {
+        "letter": "B",
+        "text": "The endpoint is hitting a memory limit before the CPU trigger. Decrease the CPU utilization target for autoscaling."
+      },
+      {
+        "letter": "C",
+        "text": "The default autoscaling target is too low. Increase the CPU utilization target to allow more work per node before scaling."
+      },
+      {
+        "letter": "D",
+        "text": "The underlying service account lacks permissions to provision new nodes. Grant it the Compute Instance Admin role."
+      }
+    ],
+    "correctAnswers": ["B"],
+    "explanation": "Why B is correct: Vertex AI Endpoint autoscaling is primarily driven by CPU utilization. The scenario describes a 'memory-intensive' process where failures occur while CPU usage is still moderate. This strongly suggests that the model is running out of memory and crashing before the CPU load gets high enough to cross the default autoscaling threshold (e.g., 60%). By *decreasing* the CPU utilization target (e.g., to 30%), you make the autoscaler more sensitive. It will trigger the creation of a new node much earlier, effectively distributing the memory load across more machines before any single machine becomes memory-exhausted. \n\nOfficial Documentation: [Scaling options for model deployments](https://cloud.google.com/vertex-ai/docs/predictions/scaling#autoscaling-parameters)",
+    "wrongExplanation": "Why the others are wrong: \nA: The evidence points to a memory bottleneck, not a CPU one. Changing to a compute-optimized machine might not solve the memory issue. \nC: Increasing the CPU target would exacerbate the problem, as it would require an even higher CPU load before scaling, making it even more likely that the node runs out of memory first. \nD: This is highly unlikely. The service accounts used by Vertex AI are managed and have the necessary permissions to scale resources by default."
+  },
+  {
+    "number": 106,
+    "title": "Configuring Secure, Collaborative Access to a User-Managed Notebook",
+    "level": 2,
+    "services": ["Vertex AI Workbench", "IAM"],
+    "scenario": "You are setting up a shared Vertex AI Workbench user-managed notebook instance for your team's collaborative prototyping. You need to ensure that only the members of your team can access and use the notebook, and that the notebook itself has the appropriate permissions to interact with other Google Cloud services (like BigQuery and Cloud Storage) on the team's behalf. The solution must follow the principle of least privilege.",
+    "questionText": "What is the correct IAM configuration to achieve this?",
+    "isMultiChoice": 0,
+    "options": [
+      {
+        "letter": "A",
+        "text": "Create a new, dedicated service account for the notebook. Grant this service account the necessary roles (e.g., Vertex AI User, BigQuery User). For each team member, grant them the Service Account User role on this specific service account and the Notebooks Runner role on the project."
+      },
+      {
+        "letter": "B",
+        "text": "Provision the notebook using the default Compute Engine service account. Grant each team member the Service Account User role on this default service account to allow them to use the notebook."
+      },
+      {
+        "letter": "C",
+        "text": "Create a new, dedicated service account and grant it the necessary roles (e.g., Vertex AI User). Provision the notebook using this service account. Separately, grant each team member the Editor role on the Google Cloud project."
+      },
+      {
+        "letter": "D",
+        "text": "Provision the notebook to run as the primary team member's user account. Add the other team members as users with Viewer access on the notebook instance's properties."
+      }
+    ],
+    "correctAnswers": ["A"],
+    "explanation": "Why A is correct: This option describes the modern best practice for secure, collaborative access. 1. **Dedicated Service Account**: Creating a service account specifically for the notebook ensures its permissions are isolated and managed according to the principle of least privilege. 2. **Granting Roles to Service Account**: The service account is granted the permissions it needs to do its job (e.g., `Vertex AI User`). 3. **`Service Account User` Role**: Granting team members this role *on the specific service account* allows them to impersonate it and inherit its permissions when using the notebook. This is the key to providing access without making users overly powerful. 4. **Notebooks Role**: A role like `Notebooks Runner` or `Notebooks Admin` is needed at the project level for users to be able to start, stop, and connect to the instance itself. This combination is secure, manageable, and follows least privilege. \n\nOfficial Documentation: [Grant a user access to a user-managed notebooks instance](https://cloud.google.com/vertex-ai/docs/workbench/user-managed/grant-access)",
+    "wrongExplanation": "Why the others are wrong: \nB: Using the default Compute Engine service account is poor practice. It is often overly permissive and is shared across many resources, making it difficult to enforce the principle of least privilege. \nC: Granting the `Editor` role to team members is overly permissive and a major security risk. It gives them broad permissions across the entire project, far exceeding what is needed to use a single notebook. \nD: Running a shared resource under a single user's personal account is bad practice for security and manageability. It creates a dependency on that user and doesn't scale."
+  },
+  {
+    "number": 107,
+    "title": "Optimizing Pipeline Costs by Leveraging Caching",
+    "level": 2,
+    "services": ["Vertex AI Pipelines", "BigQuery", "Kubeflow Pipelines (KFP)"],
+    "scenario": "You have a four-step Vertex AI pipeline (export, preprocess, train, calibrate) defined using the KFP v2 SDK. The first two steps, which export and preprocess a very large BigQuery table, are deterministic and time-consuming. You are iterating rapidly on the `train` and `calibrate` steps, changing only their code and parameters. You have enabled caching for the pipeline (`enable_caching=True`), but you notice that the export and preprocess steps are re-running on every execution, leading to high costs and long iteration cycles.",
+    "questionText": "What is the most likely reason the caching is not working for the initial steps, and how do you fix it?",
+    "isMultiChoice": 0,
+    "options": [
+      {
+        "letter": "A",
+        "text": "The inputs to the initial components are changing. You should hardcode the BigQuery table name to ensure the inputs are static."
+      },
+      {
+        "letter": "B",
+        "text": "The components' definitions are changing on each run because their names are being dynamically generated with a timestamp. You should give the static components fixed names."
+      },
+      {
+        "letter": "C",
+        "text": "The pipeline job name is dynamic. You need to provide a static pipeline `job_id` for caching to work across runs."
+      },
+      {
+        "letter": "D",
+        "text": "Caching is disabled by default for components that access external resources like BigQuery. You must explicitly set `use_caching=True` on each component decorator."
+      }
+    ],
+    "correctAnswers": ["B"],
+    "explanation": "Why B is correct: Vertex AI Pipelines caching works by creating a hash of a component's definition and its input values. If the hash matches a previous execution, the cached result is used. A common mistake is to dynamically generate component names (e.g., `f'preprocess-{timestamp}'`). This causes the component's definition to be different on every single run, which in turn generates a new, unique hash. As a result, the cache is never hit. By giving the deterministic steps (export, preprocess) static, unchanging names, you ensure their definition remains constant. As long as their inputs also remain constant, the cache will be correctly utilized, saving significant time and cost. \n\nOfficial Documentation: [Caching in Vertex AI Pipelines](https://cloud.google.com/vertex-ai/docs/pipelines/caching)",
+    "wrongExplanation": "Why the others are wrong: \nA: The scenario implies the inputs (the source BigQuery table) are not changing, but rather the downstream training code is. \nC: The overall pipeline job name or ID does not affect the caching of individual components within it. Caching operates at the component level. \nD: In KFP v2, `enable_caching=True` at the pipeline level is sufficient to enable caching for all components. You do not need to enable it on a per-component basis."
+  },
+  {
+    "number": 108,
+    "title": "Choosing a Managed Spark Environment for a PoC Migration",
+    "level": 2,
+    "services": ["Dataproc", "Vertex AI Workbench", "Compute Engine", "Google Kubernetes Engine"],
+    "scenario": "Your team is migrating several data science workloads from an on-premises Hadoop cluster to Google Cloud. The workloads are written in PySpark. As a first step, you need to migrate a single PySpark batch job as a proof of concept (PoC). The goal is to propose a migration path that minimizes setup effort and cost for the PoC, while accurately representing a scalable production environment.",
+    "questionText": "What is the most appropriate first step for this PoC?",
+    "isMultiChoice": 0,
+    "options": [
+      {
+        "letter": "A",
+        "text": "Provision a single large Compute Engine VM and manually install Apache Spark and its dependencies."
+      },
+      {
+        "letter": "B",
+        "text": "Deploy a Spark on GKE cluster using the open-source Spark operator."
+      },
+      {
+        "letter": "C",
+        "text": "Submit the PySpark job to a Dataproc Serverless for Spark runtime, specifying the job's dependencies and required resources."
+      },
+      {
+        "letter": "D",
+        "text": "Create a Vertex AI Workbench instance with a Spark kernel and run the job code interactively in the notebook."
+      }
+    ],
+    "correctAnswers": ["C"],
+    "explanation": "Why C is correct: Dataproc is Google Cloud's fully managed service for Spark. For a batch job PoC, **Dataproc Serverless** is the ideal choice. It allows you to run Spark jobs without provisioning or managing any clusters. You simply submit the job, and Google Cloud handles the underlying infrastructure, scaling it as needed and charging only for the job's duration. This offers the lowest possible operational overhead and cost for a PoC, while still using the production-grade, managed Spark environment. \n\nOfficial Documentation: [Dataproc Serverless for Spark overview](https://cloud.google.com/dataproc-serverless/docs/overview)",
+    "wrongExplanation": "Why the others are wrong: \nA & B: These options require significant manual effort to install, configure, and manage Spark infrastructure, which contradicts the 'minimal setup effort' requirement. \nD: A Vertex AI Workbench notebook is an interactive development environment, not a suitable platform for running a production-style batch job. Dataproc is the correct service for executing scheduled or on-demand Spark jobs."
+  },
+  {
+    "number": 109,
+    "title": "Core Services for Iterative Model Experimentation and Comparison",
+    "level": 1,
+    "services": ["Vertex ML Metadata", "Vertex AI Experiments", "Vertex AI TensorBoard"],
+    "scenario": "As part of developing a model to support loan application decisions, you need to build a workflow that allows for rigorous experimentation. The workflow must track the specific hyperparameters used for each training run, visualize performance metrics like loss and accuracy as they change over each epoch, and provide a clear, tabular comparison of the final model versions to select the best performer.",
+    "questionText": "Which combination of Vertex AI services is designed to meet these needs?",
+    "isMultiChoice": 0,
+    "options": [
+      {
+        "letter": "A",
+        "text": "Vertex AI Feature Store for inputs, Vertex AI Vizier for tuning, and Vertex ML Metadata for storage."
+      },
+      {
+        "letter": "B",
+        "text": "Vertex AI Pipelines for orchestration, Vertex AI Experiments for run comparison, and Vertex AI Vizier for optimization."
+      },
+      {
+        "letter": "C",
+        "text": "Vertex ML Metadata for lineage, Vertex AI Experiments for comparing runs, and Vertex AI TensorBoard for visualizing metrics over time."
+      },
+      {
+        "letter": "D",
+        "text": "Vertex AI Pipelines for orchestration, Vertex AI TensorBoard for visualization, and the Model Registry for versioning."
+      }
+    ],
+    "correctAnswers": ["C"],
+    "explanation": "Why C is correct: This combination of services provides the complete, integrated solution for experiment tracking. 1. **Vertex AI Experiments**: This is the central hub for logging parameters and comparing the final metrics of different runs in a structured, tabular UI. 2. **Vertex AI TensorBoard**: This is the purpose-built tool for visualizing metrics that change over time, such as loss-per-epoch, which is a specific requirement. 3. **Vertex ML Metadata**: This is the foundational service that works seamlessly in the background, automatically capturing the artifacts, parameters, and lineage for both Experiments and TensorBoard, tying everything together. \n\nOfficial Documentation: [Get started with Vertex AI Experiments](https://cloud.google.com/vertex-ai/docs/experiments/get-started)",
+    "wrongExplanation": "Why the others are wrong: \nA: Feature Store manages features, and Vizier performs optimization; neither is for the core task of tracking and comparing experiment results. \nB: Vizier is for automated hyperparameter tuning, not for the manual comparison and visualization described. \nD: This is missing Vertex AI Experiments, which is the primary tool for the side-by-side comparison of different experimental runs."
+  },
+  {
+    "number": 110,
+    "title": "Fastest Path to a Custom Object Detection Model",
+    "level": 1,
+    "services": ["Vertex AI AutoML"],
+    "scenario": "An auto insurance company needs a proof-of-concept model that can identify damaged parts (e.g., 'cracked_bumper', 'shattered_windshield') in images of vehicles. The team has already prepared a dataset of images with bounding box annotations for each part. The primary goal is to create an initial, working model as quickly as possible, with a sufficient budget available.",
+    "questionText": "What is the most direct approach?",
+    "isMultiChoice": 0,
+    "options": [
+      {
+        "letter": "A",
+        "text": "Download a pre-trained model like YOLOv5 from a public repository and write a custom fine-tuning script in a Vertex AI Workbench notebook."
+      },
+      {
+        "letter": "B",
+        "text": "Use Vertex AI AutoML Image Object Detection, creating a dataset from the annotated images and launching a training job through the UI."
+      },
+      {
+        "letter": "C",
+        "text": "Define a Vertex AI Pipeline that uses TFX components to ingest the data, preprocess it, and train a custom RetinaNet model."
+      },
+      {
+        "letter": "D",
+        "text": "Launch a Vertex AI Custom Training job with a container image that contains a TensorFlow Object Detection API training script."
+      }
+    ],
+    "correctAnswers": ["B"],
+    "explanation": "Why B is correct: The requirement is to 'quickly create an initial model'. Vertex AI AutoML is the definitive no-code/low-code solution for this. For object detection, it allows you to directly upload images with their bounding box annotations (or provide a path to them). AutoML then automates the entire process of model selection, architecture search, and training to produce a high-quality, custom object detection model. This is by far the fastest path from labeled data to a deployed model, requiring no custom coding. \n\nOfficial Documentation: [Train an AutoML image object detection model](https://cloud.google.com/vertex-ai/docs/image-data/object-detection/train-model)",
+    "wrongExplanation": "Why the others are wrong: \nA, C, and D are all custom code approaches. They require significant effort in writing scripts, managing dependencies, and configuring training jobs. While they offer more control, they are much slower and more complex than the managed AutoML service, failing the 'quickly create' requirement."
+  },
+  {
+    "number": 111,
+    "title": "De-identifying PII for Secure Data Analysis",
+    "level": 1,
+    "services": ["Cloud Data Loss Prevention (DLP)"],
+    "scenario": "You are a data analyst for a healthcare organization, and you need to perform exploratory data analysis (EDA) on a large dataset of customer records stored in Cloud Storage. This data contains highly sensitive personally identifiable information (PII). You must perform your analysis without ever viewing or exposing the raw PII values.",
+    "questionText": "Which Google Cloud service should you use to prepare a safe version of the data for analysis?",
+    "isMultiChoice": 0,
+    "options": [
+      {
+        "letter": "A",
+        "text": "Use the Cloud Data Loss Prevention (DLP) API to scan the data and apply a de-identification transformation, such as redaction or tokenization."
+      },
+      {
+        "letter": "B",
+        "text": "Encrypt the sensitive columns using customer-managed encryption keys (CMEK) and only grant decryption permissions to a production service account."
+      },
+      {
+        "letter": "C",
+        "text": "Move the Cloud Storage bucket inside a VPC Service Controls perimeter to prevent data exfiltration."
+      },
+      {
+        "letter": "D",
+        "text": "Use Identity-Aware Proxy (IAP) to control access to the Compute Engine instance where you will perform the analysis."
+      }
+    ],
+    "correctAnswers": ["A"],
+    "explanation": "Why A is correct: The core task is to analyze data patterns while protecting individual identities. Cloud Data Loss Prevention (DLP) is the purpose-built service for this. Its de-identification capabilities allow you to transform sensitive data in various ways (e.g., masking, tokenization, bucketing) so that the underlying statistical properties are preserved for analysis, but the raw PII is removed. This creates a privacy-safe dataset perfect for EDA. \n\nOfficial Documentation: [De-identification of sensitive data](https://cloud.google.com/dlp/docs/de-identifying-sensitive-data)",
+    "wrongExplanation": "Why the others are wrong: \nB: Encryption protects data at rest. To analyze it, you would have to decrypt it, which would expose the raw PII and violate the core requirement. \nC & D: These are network and access control security measures. They prevent unauthorized access or data exfiltration but do not protect an *authorized* analyst from seeing the raw PII within the secure environment."
+  },
+  {
+    "number": 112,
+    "title": "Choosing an Interpretable Model for Image-Based Defect Detection",
+    "level": 2,
+    "services": ["Vertex AI Explainable AI", "TensorFlow"],
+    "scenario": "You are developing a predictive maintenance system that uses high-resolution images to detect potential defects in bridges. A critical requirement is that the model's predictions must be explainable to civil engineers, meaning you need to show them *which part* of the image led the model to predict a defect.",
+    "questionText": "Which combination of modeling framework and explanation technique is most appropriate?",
+    "isMultiChoice": 0,
+    "options": [
+      {
+        "letter": "A",
+        "text": "A scikit-learn Gradient Boosting model, explained using SHAP (SHapley Additive exPlanations)."
+      },
+      {
+        "letter": "B",
+        "text": "A TensorFlow-based Convolutional Neural Network (CNN), explained using Integrated Gradients."
+      },
+      {
+        "letter": "C",
+        "text": "An AutoML Vision model, explained using example-based explanations."
+      },
+      {
+        "letter": "D",
+        "text": "A BigQuery ML logistic regression model, explained using the model's coefficients."
+      }
+    ],
+    "correctAnswers": ["B"],
+    "explanation": "Why B is correct: 1. **Model Choice**: For a complex task involving high-resolution images, a deep learning model like a Convolutional Neural Network (CNN), built with TensorFlow, is the standard and most powerful choice. 2. **Explanation Technique**: The requirement is to show *which part* of the image was important. Integrated Gradients is a feature attribution technique specifically designed for this. When applied to an image model, it produces a saliency map (a heatmap) that visually highlights the pixels that most influenced the model's prediction. This is a highly intuitive way to explain the model's reasoning to stakeholders. \n\nOfficial Documentation: [Overview of Vertex Explainable AI](https://cloud.google.com/vertex-ai/docs/explainable-ai/overview#feature-attributions)",
+    "wrongExplanation": "Why the others are wrong: \nA & D: Traditional ML models like Gradient Boosting or logistic regression are not designed to work directly with raw image data and would perform poorly. \nC: Example-based explanations are useful for finding similar images in the training set but do not highlight the specific pixels or regions *within the input image* that were important, which is the core requirement."
+  },
+  {
+    "number": 113,
+    "title": "Fastest Model Development for Time-Series Forecasting with Covariates",
+    "level": 2,
+    "services": ["Vertex AI AutoML Forecasting", "BigQuery ML"],
+    "scenario": "A hospital needs to predict the daily number of beds required for patients based on the number of surgeries scheduled for that day. They have a year of daily historical data for both metrics. The goal is to build an accurate forecasting model with the maximum speed of development and testing.",
+    "questionText": "Which modeling approach should you choose?",
+    "isMultiChoice": 0,
+    "options": [
+      {
+        "letter": "A",
+        "text": "Use BigQuery ML to build a multiple linear regression model, with 'number of beds' as the target and 'number of surgeries' and date-based features as predictors."
+      },
+      {
+        "letter": "B",
+        "text": "Use BigQuery ML to build a univariate `ARIMA_PLUS` model, using only the 'number of beds' and the date."
+      },
+      {
+        "letter": "C",
+        "text": "Use Vertex AI AutoML Forecasting, defining 'number of beds' as the target series, the date as the time column, and 'number of scheduled surgeries' as a covariate."
+      },
+      {
+        "letter": "D",
+        "text": "Use Vertex AI AutoML Tabular Regression, treating it as a standard regression problem and ignoring the time-series nature of the data."
+      }
+    ],
+    "correctAnswers": ["C"],
+    "explanation": "Why C is correct: This problem is a classic time-series forecast with a dynamic feature (a covariate). You are predicting a value over time ('beds per day'), and that value is influenced by another time-varying feature ('surgeries per day'). Vertex AI AutoML Forecasting is the service specifically designed for this complexity. It allows you to define a target, a time column, and one or more covariates. AutoML automatically handles the complex temporal dynamics, seasonality, and the influence of the covariates to produce a state-of-the-art model with minimal effort, thus maximizing development speed. \n\nOfficial Documentation: [Forecasting on tabular data overview](https://cloud.google.com/vertex-ai/docs/tabular-data/forecasting/overview)",
+    "wrongExplanation": "Why the others are wrong: \nA & D: A standard regression model completely ignores the temporal dependencies and ordering of the data (e.g., that today's bed count is related to yesterday's). This will lead to a suboptimal and likely inaccurate model. \nB: A standard ARIMA model is univariate and cannot incorporate the 'number of scheduled surgeries' as a predictive feature (covariate), which is a key piece of information in the problem."
+  },
+  {
+    "number": 114,
+    "title": "Creating a Training Pipeline for an Existing TensorFlow Model and SQL Preprocessing",
+    "level": 3,
+    "services": ["Vertex AI Pipelines", "Kubeflow Pipelines (KFP)", "TensorFlow Extended (TFX)", "BigQuery"],
+    "scenario": "You have an existing wide and deep TensorFlow model and a separate SQL script that performs all necessary instance-level preprocessing on raw data in BigQuery. You need to create an automated weekly retraining pipeline for this model, which will be used for daily batch recommendations. Your goal is to productionize this workflow with minimal development time by reusing the existing assets.",
+    "questionText": "How should you design the training pipeline?",
+    "isMultiChoice": 0,
+    "options": [
+      {
+        "letter": "A",
+        "text": "Use the Kubeflow Pipelines (KFP) SDK. Create a pipeline that uses the pre-built `BigqueryQueryJobOp` component to execute your existing SQL script, and then passes the output to a `CustomTrainingJobOp` to train the TensorFlow model."
+      },
+      {
+        "letter": "B",
+        "text": "Rewrite the SQL preprocessing logic as a Python Apache Beam script. Use the KFP SDK to create a pipeline with a `DataflowPythonJobOp` for preprocessing and a `CustomTrainingJobOp` for training."
+      },
+      {
+        "letter": "C",
+        "text": "Use the TensorFlow Extended (TFX) SDK. Ingest the data using the `BigQueryExampleGen` component and rewrite the SQL logic using `tf.Transform` inside the `Transform` component before passing it to the `Trainer`."
+      },
+      {
+        "letter": "D",
+        "text": "In your TensorFlow training code, embed the preprocessing logic directly within the `input_fn` so that it's executed as part of the training job. Use a simple KFP pipeline to launch the training job."
+      }
+    ],
+    "correctAnswers": ["A"],
+    "explanation": "Why A is correct: The primary constraint is 'minimal development time' by 'reusing existing assets'. The preprocessing logic already exists as a working SQL script. The Kubeflow Pipelines (KFP) SDK offers a pre-built component, `BigqueryQueryJobOp`, which is designed to execute an arbitrary SQL query or script in BigQuery. This allows you to directly incorporate your existing preprocessing step into a pipeline without any code changes. The output of this step can then be seamlessly passed to a `CustomTrainingJobOp` to train your existing TensorFlow model. This is the most direct and lowest-effort path to automation. \n\nOfficial Documentation: [BigqueryQueryJobOp Component](https://google-cloud-pipeline-components.readthedocs.io/en/google-cloud-pipeline-components-2.0.0/google_cloud_pipeline_components.v1.bigquery.html#google_cloud_pipeline_components.v1.bigquery.BigqueryQueryJobOp)",
+    "wrongExplanation": "Why the others are wrong: \nB & C: These options require a significant rewrite of the existing, working SQL preprocessing script into a different framework (Dataflow or TFX Transform). This directly contradicts the goal of minimizing development time. \nD: Embedding preprocessing logic, especially for large datasets, into the `input_fn` is highly inefficient. It means the preprocessing would be re-executed for every training epoch, dramatically increasing training time and cost."
+  },
+  {
+    "number": 115,
+    "title": "Preventing Training-Serving Skew for a Real-Time Model",
+    "level": 1,
+    "services": ["Dataflow", "Vertex AI Endpoints", "MLOps Concepts"],
+    "scenario": "Your model's training data was preprocessed using a batch Dataflow pipeline. Now, you are deploying this model to a Vertex AI Endpoint for real-time predictions. It is critical that the preprocessing applied to the live prediction data is identical to the preprocessing used during training to avoid performance degradation.",
+    "questionText": "What is the fundamental best practice to ensure this consistency?",
+    "isMultiChoice": 0,
+    "options": [
+      {
+        "letter": "A",
+        "text": "Implement a schema validation step at the endpoint to ensure incoming data has the same format as the raw training data."
+      },
+      {
+        "letter": "B",
+        "text": "Refactor the core transformation logic from the batch pipeline into a shared, importable module. Call this same module from both the training pipeline and the real-time serving application."
+      },
+      {
+        "letter": "C",
+        "text": "Provide the preprocessing code to all client applications and require them to transform the data before calling the endpoint."
+      },
+      {
+        "letter": "D",
+        "text": "In the serving application, micro-batch the incoming real-time requests and send them to the same Dataflow pipeline for preprocessing before making predictions."
+      }
+    ],
+    "correctAnswers": ["B"],
+    "explanation": "Why B is correct: This is the canonical solution to prevent training-serving skew. The principle is 'Don't Repeat Yourself' (DRY). By implementing the preprocessing logic once in a reusable format (like a Python module or library) and then calling that exact same code from both the training environment and the serving environment, you eliminate the possibility of the two implementations drifting apart. This guarantees that the transformations are identical. \n\nOfficial Documentation: [MLOps: Continuous delivery and automation pipelines in machine learning](https://cloud.google.com/architecture/mlops-continuous-delivery-and-automation-pipelines-in-machine-learning#preprocessing_component)",
+    "wrongExplanation": "Why the others are wrong: \nA: Validating the raw input schema is a good practice but does not guarantee the *transformation logic* itself is consistent. Two different codebases could apply different logic to the same valid input. \nC: This is a terrible practice. It places a burden on every client, is impossible to enforce, and makes updating the preprocessing logic a nightmare. \nD: This completely defeats the purpose of 'real-time inference'. Introducing a batch Dataflow job into the serving path would add minutes or hours of latency to each prediction."
+  },
+  {
+    "number": 101,
+    "title": "Orchestrating a Scalable Generative AI Training Workflow",
+    "level": 2,
+    "services": ["Vertex AI Pipelines", "TensorFlow Extended (TFX)", "Kubeflow Pipelines (KFP)"],
+    "scenario": "You are tasked with productionizing a text-to-image diffusion model in TensorFlow. The training dataset consists of billions of image-caption pairs stored in a Cloud Storage bucket. You need a managed, low-maintenance, automated workflow to orchestrate the entire process: data ingestion, statistical analysis (e.g., using TFDV), data splitting and transformation, distributed model training, and finally, model validation on a hold-out test set.",
+    "questionText": "Which SDK and platform combination is most suitable for building this automated workflow on Google Cloud?",
+    "isMultiChoice": 0,
+    "options": [
+      {
+        "letter": "A",
+        "text": "Use the Apache Airflow SDK to define a DAG with operators for Dataflow and Vertex AI services, then deploy and manage it on a Cloud Composer environment."
+      },
+      {
+        "letter": "B",
+        "text": "Use the Kubeflow Pipelines (KFP) SDK to define a pipeline with custom components that wrap Dataflow for preprocessing and a Vertex AI CustomJob for training. Deploy the compiled pipeline to Vertex AI Pipelines."
+      },
+      {
+        "letter": "C",
+        "text": "Use the TensorFlow Extended (TFX) SDK to define a pipeline using its standard components (e.g., ExampleGen, StatisticsGen, Trainer). Deploy the compiled pipeline to Vertex AI Pipelines, configuring Dataflow as the processing backend."
+      },
+      {
+        "letter": "D",
+        "text": "Use MLFlow Tracking to log parameters and metrics from a master script. Orchestrate the script's execution, which calls Dataflow and Vertex AI services, using a Cloud Scheduler job."
+      }
+    ],
+    "correctAnswers": ["C"],
+    "explanation": "Why C is correct: The scenario involves a massive dataset of 'billions of images with captions' and a standard MLOps workflow (statistics, split, transform, train, validate). TensorFlow Extended (TFX) is specifically designed and recommended by Google for these large-scale, end-to-end ML workflows, especially for structured data and text, but its components are also highly effective for managing large-scale image data pipelines. TFX provides a robust, standardized set of components for each step, which integrates seamlessly with Dataflow for scalable processing and Vertex AI for training and orchestration. This is the most complete and standardized solution for the described problem. \n\nOfficial Documentation: [TFX on Google Cloud](https://cloud.google.com/solutions/tfx-on-google-cloud)",
+    "wrongExplanation": "Why the others are wrong: \nA: While Cloud Composer can orchestrate ML workflows, Vertex AI Pipelines is the more modern, tightly integrated, and purpose-built service for MLOps on Google Cloud, generally requiring less infrastructure management. \nB: Kubeflow Pipelines (KFP) is a more general-purpose workflow orchestrator. While you could build this pipeline with KFP, you would be re-implementing much of the standardized functionality that TFX provides out-of-the-box (like data validation, schema generation, etc.), leading to more custom code. \nD: MLFlow is primarily a tool for experiment tracking and model management, not a full-fledged pipeline orchestration framework like TFX or KFP."
+  },
+  {
+    "number": 102,
+    "title": "Rapid Sales Forecasting for Short-Lifecycle Products",
+    "level": 1,
+    "services": ["BigQuery ML", "Vertex AI Forecast", "Vertex AI Training"],
+    "scenario": "An online retailer needs to forecast monthly sales for thousands of products, many of which have short lifecycles. All five years of historical sales data are stored in a BigQuery table. The primary goal is to generate these forecasts with a solution that is extremely fast to implement and requires minimal custom coding or data movement.",
+    "questionText": "Which approach should you take to meet these requirements?",
+    "isMultiChoice": 0,
+    "options": [
+      {
+        "letter": "A",
+        "text": "Export the data from BigQuery and use Vertex AI Forecast, which leverages advanced neural network models for high accuracy."
+      },
+      {
+        "letter": "B",
+        "text": "Use a Vertex AI Workbench notebook to train a custom Prophet model on the data exported from BigQuery."
+      },
+      {
+        "letter": "C",
+        "text": "Use BigQuery ML to train an `ARIMA_PLUS` model directly on the data using a single SQL `CREATE MODEL` statement."
+      },
+      {
+        "letter": "D",
+        "text": "Write a custom TensorFlow model using LSTMs, and train it on Vertex AI Training, reading data directly from BigQuery."
+      }
+    ],
+    "correctAnswers": ["C"],
+    "explanation": "Why C is correct: The key constraints are that the data resides in BigQuery and the solution must be fast with minimal effort. BigQuery ML is the only option that meets these perfectly. It allows you to train powerful forecasting models like `ARIMA_PLUS` directly within the data warehouse using simple SQL commands. This eliminates the need for data movement, infrastructure setup, or writing Python code, making it by far the quickest and easiest path from data to a production-ready forecasting model. \n\nOfficial Documentation: [The CREATE MODEL statement for time series models](https://cloud.google.com/bigquery-ml/docs/reference/standard-sql/bigqueryml-syntax-create-time-series)",
+    "wrongExplanation": "Why the others are wrong: \nA, B, and D: All these options require significantly more effort. They involve exporting data from BigQuery, setting up separate training environments in Vertex AI, and writing custom Python code. While they offer high degrees of customization, they fail the primary requirements of speed and minimal implementation effort."
+  },
+  {
+    "number": 103,
+    "title": "Assembling a Custom Text Model Training Pipeline on Vertex AI",
+    "level": 2,
+    "services": ["Vertex AI Pipelines"],
+    "scenario": "You are building an automated pipeline on Vertex AI to train a custom sentiment analysis model on text-based product reviews. You need full control over the model's architecture and hyperparameter tuning process. After a successful training run, the resulting model artifact must be registered and deployed to a new Vertex AI Endpoint.",
+    "questionText": "Which sequence of Google Cloud Pipeline Components is correct for this workflow?",
+    "isMultiChoice": 0,
+    "options": [
+      {
+        "letter": "A",
+        "text": "`TabularDatasetCreateOp`, `CustomTrainingJobOp`, `EndpointCreateOp`, `ModelDeployOp`"
+      },
+      {
+        "letter": "B",
+        "text": "`TextDatasetCreateOp`, `AutoMLTextTrainingJobRunOp`, `ModelDeployOp`"
+      },
+      {
+        "letter": "C",
+        "text": "`TextDatasetCreateOp`, `CustomTrainingJobOp`, `ModelUploadOp`, `EndpointCreateOp`, `ModelDeployOp`"
+      },
+      {
+        "letter": "D",
+        "text": "`TextDatasetCreateOp`, `CustomContainerTrainingJobRunOp`, `ModelDeployOp`"
+      }
+    ],
+    "correctAnswers": ["D"],
+    "explanation": "Why D is correct: This option correctly identifies the components for a custom model workflow. 1. **`TextDatasetCreateOp`**: Correct for creating a dataset from text-based reviews. 2. **`CustomContainerTrainingJobRunOp`**: This is the appropriate component for running a custom training job where you have full control over the model architecture and tuning, as specified. It expects you to provide a custom container with your training code. 3. **`ModelDeployOp`**: This single component elegantly handles both uploading the model artifact to the Vertex AI Model Registry and deploying it to a new or existing endpoint. The other options contain redundant or incorrect components. \n\nOfficial Documentation: [Google Cloud Pipeline Components Reference](https://google-cloud-pipeline-components.readthedocs.io/en/google-cloud-pipeline-components-2.0.0/)",
+    "wrongExplanation": "Why the others are wrong: \nA: `TabularDatasetCreateOp` is for structured data, not text. Also, `EndpointCreateOp` and `ModelDeployOp` are separate; `ModelDeployOp` can create the endpoint itself, making the former redundant. \nB: `AutoMLTextTrainingJobRunOp` cedes control over architecture and tuning to AutoML, which violates a key requirement. \nC: This sequence is redundant. The `ModelDeployOp` can handle the model upload and endpoint creation internally, so separate `ModelUploadOp` and `EndpointCreateOp` steps are unnecessary and add complexity."
+  },
+  {
+    "number": 104,
+    "title": "Configuring a Foundational CI Trigger for Model Retraining",
+    "level": 1,
+    "services": ["Cloud Build", "Cloud Source Repositories"],
+    "scenario": "Your data science team uses a single Cloud Source Repository for all ML model experimentation and development. You need to establish a foundational Continuous Integration (CI) pipeline using Cloud Build. The pipeline must be triggered automatically to retrain and test a model whenever any code modification is saved to the repository.",
+    "questionText": "What is the most direct and appropriate first step to configure this CI trigger?",
+    "isMultiChoice": 0,
+    "options": [
+      {
+        "letter": "A",
+        "text": "Configure a Cloud Build trigger with the event type set to 'Pull Request' targeting the main branch."
+      },
+      {
+        "letter": "B",
+        "text": "Configure a Cloud Build trigger with the event type set to 'Push to a branch'."
+      },
+      {
+        "letter": "C",
+        "text": "Write a Cloud Function with a Source Repository trigger that manually invokes the Cloud Build API."
+      },
+      {
+        "letter": "D",
+        "text": "Configure a Pub/Sub notification on the repository and a Cloud Build trigger that subscribes to that topic."
+      }
+    ],
+    "correctAnswers": ["B"],
+    "explanation": "Why B is correct: The requirement is to trigger a pipeline upon 'any modification of the code'. In a Git workflow, a code modification is officially recorded in the repository via a `git push` operation. Therefore, setting the Cloud Build trigger's event to 'Push to a branch' is the canonical and most comprehensive method. This ensures that every single commit pushed to any branch (or a specific branch, if filtered) will automatically start the CI pipeline. \n\nOfficial Documentation: [Creating and managing build triggers](https://cloud.google.com/build/docs/automating-builds/create-manage-triggers)",
+    "wrongExplanation": "Why the others are wrong: \nA: Triggering on 'Pull Request' is a common practice for validation before a merge, but it wouldn't trigger on direct pushes to a branch that are not part of a PR, thus missing some modifications. \nC & D: These are overly complex, indirect methods. Cloud Build has a native, direct integration with source repositories, making intermediate services like Cloud Functions or Pub/Sub unnecessary for this basic trigger."
+  },
+  {
+    "number": 105,
+    "title": "Diagnosing Autoscaling Failures in Memory-Bound Endpoints",
+    "level": 3,
+    "services": ["Vertex AI Endpoints"],
+    "scenario": "You've deployed a custom model to a Vertex AI endpoint. The model's prediction logic involves several memory-intensive preprocessing steps. After deploying with default autoscaling settings, you observe that under concurrent load, the endpoint fails to scale out and instead starts returning errors, even though CPU metrics remain moderate.",
+    "questionText": "What is the most likely cause and the correct solution?",
+    "isMultiChoice": 0,
+    "options": [
+      {
+        "letter": "A",
+        "text": "The model is CPU-bound. Increase the machine size to a compute-optimized type."
+      },
+      {
+        "letter": "B",
+        "text": "The endpoint is hitting a memory limit before the CPU trigger. Decrease the CPU utilization target for autoscaling."
+      },
+      {
+        "letter": "C",
+        "text": "The default autoscaling target is too low. Increase the CPU utilization target to allow more work per node before scaling."
+      },
+      {
+        "letter": "D",
+        "text": "The underlying service account lacks permissions to provision new nodes. Grant it the Compute Instance Admin role."
+      }
+    ],
+    "correctAnswers": ["B"],
+    "explanation": "Why B is correct: Vertex AI Endpoint autoscaling is primarily driven by CPU utilization. The scenario describes a 'memory-intensive' process where failures occur while CPU usage is still moderate. This strongly suggests that the model is running out of memory and crashing before the CPU load gets high enough to cross the default autoscaling threshold (e.g., 60%). By *decreasing* the CPU utilization target (e.g., to 30%), you make the autoscaler more sensitive. It will trigger the creation of a new node much earlier, effectively distributing the memory load across more machines before any single machine becomes memory-exhausted. \n\nOfficial Documentation: [Scaling options for model deployments](https://cloud.google.com/vertex-ai/docs/predictions/scaling#autoscaling-parameters)",
+    "wrongExplanation": "Why the others are wrong: \nA: The evidence points to a memory bottleneck, not a CPU one. Changing to a compute-optimized machine might not solve the memory issue. \nC: Increasing the CPU target would exacerbate the problem, as it would require an even higher CPU load before scaling, making it even more likely that the node runs out of memory first. \nD: This is highly unlikely. The service accounts used by Vertex AI are managed and have the necessary permissions to scale resources by default."
+  },
+  {
+    "number": 106,
+    "title": "Configuring Secure, Collaborative Access to a User-Managed Notebook",
+    "level": 2,
+    "services": ["Vertex AI Workbench", "IAM"],
+    "scenario": "You are setting up a shared Vertex AI Workbench user-managed notebook instance for your team's collaborative prototyping. You need to ensure that only the members of your team can access and use the notebook, and that the notebook itself has the appropriate permissions to interact with other Google Cloud services (like BigQuery and Cloud Storage) on the team's behalf. The solution must follow the principle of least privilege.",
+    "questionText": "What is the correct IAM configuration to achieve this?",
+    "isMultiChoice": 0,
+    "options": [
+      {
+        "letter": "A",
+        "text": "Create a new, dedicated service account for the notebook. Grant this service account the necessary roles (e.g., Vertex AI User, BigQuery User). For each team member, grant them the Service Account User role on this specific service account and the Notebooks Runner role on the project."
+      },
+      {
+        "letter": "B",
+        "text": "Provision the notebook using the default Compute Engine service account. Grant each team member the Service Account User role on this default service account to allow them to use the notebook."
+      },
+      {
+        "letter": "C",
+        "text": "Create a new, dedicated service account and grant it the necessary roles (e.g., Vertex AI User). Provision the notebook using this service account. Separately, grant each team member the Editor role on the Google Cloud project."
+      },
+      {
+        "letter": "D",
+        "text": "Provision the notebook to run as the primary team member's user account. Add the other team members as users with Viewer access on the notebook instance's properties."
+      }
+    ],
+    "correctAnswers": ["A"],
+    "explanation": "Why A is correct: This option describes the modern best practice for secure, collaborative access. 1. **Dedicated Service Account**: Creating a service account specifically for the notebook ensures its permissions are isolated and managed according to the principle of least privilege. 2. **Granting Roles to Service Account**: The service account is granted the permissions it needs to do its job (e.g., `Vertex AI User`). 3. **`Service Account User` Role**: Granting team members this role *on the specific service account* allows them to impersonate it and inherit its permissions when using the notebook. This is the key to providing access without making users overly powerful. 4. **Notebooks Role**: A role like `Notebooks Runner` or `Notebooks Admin` is needed at the project level for users to be able to start, stop, and connect to the instance itself. This combination is secure, manageable, and follows least privilege. \n\nOfficial Documentation: [Grant a user access to a user-managed notebooks instance](https://cloud.google.com/vertex-ai/docs/workbench/user-managed/grant-access)",
+    "wrongExplanation": "Why the others are wrong: \nB: Using the default Compute Engine service account is poor practice. It is often overly permissive and is shared across many resources, making it difficult to enforce the principle of least privilege. \nC: Granting the `Editor` role to team members is overly permissive and a major security risk. It gives them broad permissions across the entire project, far exceeding what is needed to use a single notebook. \nD: Running a shared resource under a single user's personal account is bad practice for security and manageability. It creates a dependency on that user and doesn't scale."
+  },
+  {
+    "number": 107,
+    "title": "Optimizing Pipeline Costs by Leveraging Caching",
+    "level": 2,
+    "services": ["Vertex AI Pipelines", "BigQuery", "Kubeflow Pipelines (KFP)"],
+    "scenario": "You have a four-step Vertex AI pipeline (export, preprocess, train, calibrate) defined using the KFP v2 SDK. The first two steps, which export and preprocess a very large BigQuery table, are deterministic and time-consuming. You are iterating rapidly on the `train` and `calibrate` steps, changing only their code and parameters. You have enabled caching for the pipeline (`enable_caching=True`), but you notice that the export and preprocess steps are re-running on every execution, leading to high costs and long iteration cycles.",
+    "questionText": "What is the most likely reason the caching is not working for the initial steps, and how do you fix it?",
+    "isMultiChoice": 0,
+    "options": [
+      {
+        "letter": "A",
+        "text": "The inputs to the initial components are changing. You should hardcode the BigQuery table name to ensure the inputs are static."
+      },
+      {
+        "letter": "B",
+        "text": "The components' definitions are changing on each run because their names are being dynamically generated with a timestamp. You should give the static components fixed names."
+      },
+      {
+        "letter": "C",
+        "text": "The pipeline job name is dynamic. You need to provide a static pipeline `job_id` for caching to work across runs."
+      },
+      {
+        "letter": "D",
+        "text": "Caching is disabled by default for components that access external resources like BigQuery. You must explicitly set `use_caching=True` on each component decorator."
+      }
+    ],
+    "correctAnswers": ["B"],
+    "explanation": "Why B is correct: Vertex AI Pipelines caching works by creating a hash of a component's definition and its input values. If the hash matches a previous execution, the cached result is used. A common mistake is to dynamically generate component names (e.g., `f'preprocess-{timestamp}'`). This causes the component's definition to be different on every single run, which in turn generates a new, unique hash. As a result, the cache is never hit. By giving the deterministic steps (export, preprocess) static, unchanging names, you ensure their definition remains constant. As long as their inputs also remain constant, the cache will be correctly utilized, saving significant time and cost. \n\nOfficial Documentation: [Caching in Vertex AI Pipelines](https://cloud.google.com/vertex-ai/docs/pipelines/caching)",
+    "wrongExplanation": "Why the others are wrong: \nA: The scenario implies the inputs (the source BigQuery table) are not changing, but rather the downstream training code is. \nC: The overall pipeline job name or ID does not affect the caching of individual components within it. Caching operates at the component level. \nD: In KFP v2, `enable_caching=True` at the pipeline level is sufficient to enable caching for all components. You do not need to enable it on a per-component basis."
+  },
+  {
+    "number": 108,
+    "title": "Choosing a Managed Spark Environment for a PoC Migration",
+    "level": 2,
+    "services": ["Dataproc", "Vertex AI Workbench", "Compute Engine", "Google Kubernetes Engine"],
+    "scenario": "Your team is migrating several data science workloads from an on-premises Hadoop cluster to Google Cloud. The workloads are written in PySpark. As a first step, you need to migrate a single PySpark batch job as a proof of concept (PoC). The goal is to propose a migration path that minimizes setup effort and cost for the PoC, while accurately representing a scalable production environment.",
+    "questionText": "What is the most appropriate first step for this PoC?",
+    "isMultiChoice": 0,
+    "options": [
+      {
+        "letter": "A",
+        "text": "Provision a single large Compute Engine VM and manually install Apache Spark and its dependencies."
+      },
+      {
+        "letter": "B",
+        "text": "Deploy a Spark on GKE cluster using the open-source Spark operator."
+      },
+      {
+        "letter": "C",
+        "text": "Submit the PySpark job to a Dataproc Serverless for Spark runtime, specifying the job's dependencies and required resources."
+      },
+      {
+        "letter": "D",
+        "text": "Create a Vertex AI Workbench instance with a Spark kernel and run the job code interactively in the notebook."
+      }
+    ],
+    "correctAnswers": ["C"],
+    "explanation": "Why C is correct: Dataproc is Google Cloud's fully managed service for Spark. For a batch job PoC, **Dataproc Serverless** is the ideal choice. It allows you to run Spark jobs without provisioning or managing any clusters. You simply submit the job, and Google Cloud handles the underlying infrastructure, scaling it as needed and charging only for the job's duration. This offers the lowest possible operational overhead and cost for a PoC, while still using the production-grade, managed Spark environment. \n\nOfficial Documentation: [Dataproc Serverless for Spark overview](https://cloud.google.com/dataproc-serverless/docs/overview)",
+    "wrongExplanation": "Why the others are wrong: \nA & B: These options require significant manual effort to install, configure, and manage Spark infrastructure, which contradicts the 'minimal setup effort' requirement. \nD: A Vertex AI Workbench notebook is an interactive development environment, not a suitable platform for running a production-style batch job. Dataproc is the correct service for executing scheduled or on-demand Spark jobs."
+  },
+  {
+    "number": 109,
+    "title": "Core Services for Iterative Model Experimentation and Comparison",
+    "level": 1,
+    "services": ["Vertex ML Metadata", "Vertex AI Experiments", "Vertex AI TensorBoard"],
+    "scenario": "As part of developing a model to support loan application decisions, you need to build a workflow that allows for rigorous experimentation. The workflow must track the specific hyperparameters used for each training run, visualize performance metrics like loss and accuracy as they change over each epoch, and provide a clear, tabular comparison of the final model versions to select the best performer.",
+    "questionText": "Which combination of Vertex AI services is designed to meet these needs?",
+    "isMultiChoice": 0,
+    "options": [
+      {
+        "letter": "A",
+        "text": "Vertex AI Feature Store for inputs, Vertex AI Vizier for tuning, and Vertex ML Metadata for storage."
+      },
+      {
+        "letter": "B",
+        "text": "Vertex AI Pipelines for orchestration, Vertex AI Experiments for run comparison, and Vertex AI Vizier for optimization."
+      },
+      {
+        "letter": "C",
+        "text": "Vertex ML Metadata for lineage, Vertex AI Experiments for comparing runs, and Vertex AI TensorBoard for visualizing metrics over time."
+      },
+      {
+        "letter": "D",
+        "text": "Vertex AI Pipelines for orchestration, Vertex AI TensorBoard for visualization, and the Model Registry for versioning."
+      }
+    ],
+    "correctAnswers": ["C"],
+    "explanation": "Why C is correct: This combination of services provides the complete, integrated solution for experiment tracking. 1. **Vertex AI Experiments**: This is the central hub for logging parameters and comparing the final metrics of different runs in a structured, tabular UI. 2. **Vertex AI TensorBoard**: This is the purpose-built tool for visualizing metrics that change over time, such as loss-per-epoch, which is a specific requirement. 3. **Vertex ML Metadata**: This is the foundational service that works seamlessly in the background, automatically capturing the artifacts, parameters, and lineage for both Experiments and TensorBoard, tying everything together. \n\nOfficial Documentation: [Get started with Vertex AI Experiments](https://cloud.google.com/vertex-ai/docs/experiments/get-started)",
+    "wrongExplanation": "Why the others are wrong: \nA: Feature Store manages features, and Vizier performs optimization; neither is for the core task of tracking and comparing experiment results. \nB: Vizier is for automated hyperparameter tuning, not for the manual comparison and visualization described. \nD: This is missing Vertex AI Experiments, which is the primary tool for the side-by-side comparison of different experimental runs."
+  },
+  {
+    "number": 110,
+    "title": "Fastest Path to a Custom Object Detection Model",
+    "level": 1,
+    "services": ["Vertex AI AutoML"],
+    "scenario": "An auto insurance company needs a proof-of-concept model that can identify damaged parts (e.g., 'cracked_bumper', 'shattered_windshield') in images of vehicles. The team has already prepared a dataset of images with bounding box annotations for each part. The primary goal is to create an initial, working model as quickly as possible, with a sufficient budget available.",
+    "questionText": "What is the most direct approach?",
+    "isMultiChoice": 0,
+    "options": [
+      {
+        "letter": "A",
+        "text": "Download a pre-trained model like YOLOv5 from a public repository and write a custom fine-tuning script in a Vertex AI Workbench notebook."
+      },
+      {
+        "letter": "B",
+        "text": "Use Vertex AI AutoML Image Object Detection, creating a dataset from the annotated images and launching a training job through the UI."
+      },
+      {
+        "letter": "C",
+        "text": "Define a Vertex AI Pipeline that uses TFX components to ingest the data, preprocess it, and train a custom RetinaNet model."
+      },
+      {
+        "letter": "D",
+        "text": "Launch a Vertex AI Custom Training job with a container image that contains a TensorFlow Object Detection API training script."
+      }
+    ],
+    "correctAnswers": ["B"],
+    "explanation": "Why B is correct: The requirement is to 'quickly create an initial model'. Vertex AI AutoML is the definitive no-code/low-code solution for this. For object detection, it allows you to directly upload images with their bounding box annotations (or provide a path to them). AutoML then automates the entire process of model selection, architecture search, and training to produce a high-quality, custom object detection model. This is by far the fastest path from labeled data to a deployed model, requiring no custom coding. \n\nOfficial Documentation: [Train an AutoML image object detection model](https://cloud.google.com/vertex-ai/docs/image-data/object-detection/train-model)",
+    "wrongExplanation": "Why the others are wrong: \nA, C, and D are all custom code approaches. They require significant effort in writing scripts, managing dependencies, and configuring training jobs. While they offer more control, they are much slower and more complex than the managed AutoML service, failing the 'quickly create' requirement."
+  },
+  {
+    "number": 111,
+    "title": "De-identifying PII for Secure Data Analysis",
+    "level": 1,
+    "services": ["Cloud Data Loss Prevention (DLP)"],
+    "scenario": "You are a data analyst for a healthcare organization, and you need to perform exploratory data analysis (EDA) on a large dataset of customer records stored in Cloud Storage. This data contains highly sensitive personally identifiable information (PII). You must perform your analysis without ever viewing or exposing the raw PII values.",
+    "questionText": "Which Google Cloud service should you use to prepare a safe version of the data for analysis?",
+    "isMultiChoice": 0,
+    "options": [
+      {
+        "letter": "A",
+        "text": "Use the Cloud Data Loss Prevention (DLP) API to scan the data and apply a de-identification transformation, such as redaction or tokenization."
+      },
+      {
+        "letter": "B",
+        "text": "Encrypt the sensitive columns using customer-managed encryption keys (CMEK) and only grant decryption permissions to a production service account."
+      },
+      {
+        "letter": "C",
+        "text": "Move the Cloud Storage bucket inside a VPC Service Controls perimeter to prevent data exfiltration."
+      },
+      {
+        "letter": "D",
+        "text": "Use Identity-Aware Proxy (IAP) to control access to the Compute Engine instance where you will perform the analysis."
+      }
+    ],
+    "correctAnswers": ["A"],
+    "explanation": "Why A is correct: The core task is to analyze data patterns while protecting individual identities. Cloud Data Loss Prevention (DLP) is the purpose-built service for this. Its de-identification capabilities allow you to transform sensitive data in various ways (e.g., masking, tokenization, bucketing) so that the underlying statistical properties are preserved for analysis, but the raw PII is removed. This creates a privacy-safe dataset perfect for EDA. \n\nOfficial Documentation: [De-identification of sensitive data](https://cloud.google.com/dlp/docs/de-identifying-sensitive-data)",
+    "wrongExplanation": "Why the others are wrong: \nB: Encryption protects data at rest. To analyze it, you would have to decrypt it, which would expose the raw PII and violate the core requirement. \nC & D: These are network and access control security measures. They prevent unauthorized access or data exfiltration but do not protect an *authorized* analyst from seeing the raw PII within the secure environment."
+  },
+  {
+    "number": 112,
+    "title": "Choosing an Interpretable Model for Image-Based Defect Detection",
+    "level": 2,
+    "services": ["Vertex AI Explainable AI", "TensorFlow"],
+    "scenario": "You are developing a predictive maintenance system that uses high-resolution images to detect potential defects in bridges. A critical requirement is that the model's predictions must be explainable to civil engineers, meaning you need to show them *which part* of the image led the model to predict a defect.",
+    "questionText": "Which combination of modeling framework and explanation technique is most appropriate?",
+    "isMultiChoice": 0,
+    "options": [
+      {
+        "letter": "A",
+        "text": "A scikit-learn Gradient Boosting model, explained using SHAP (SHapley Additive exPlanations)."
+      },
+      {
+        "letter": "B",
+        "text": "A TensorFlow-based Convolutional Neural Network (CNN), explained using Integrated Gradients."
+      },
+      {
+        "letter": "C",
+        "text": "An AutoML Vision model, explained using example-based explanations."
+      },
+      {
+        "letter": "D",
+        "text": "A BigQuery ML logistic regression model, explained using the model's coefficients."
+      }
+    ],
+    "correctAnswers": ["B"],
+    "explanation": "Why B is correct: 1. **Model Choice**: For a complex task involving high-resolution images, a deep learning model like a Convolutional Neural Network (CNN), built with TensorFlow, is the standard and most powerful choice. 2. **Explanation Technique**: The requirement is to show *which part* of the image was important. Integrated Gradients is a feature attribution technique specifically designed for this. When applied to an image model, it produces a saliency map (a heatmap) that visually highlights the pixels that most influenced the model's prediction. This is a highly intuitive way to explain the model's reasoning to stakeholders. \n\nOfficial Documentation: [Overview of Vertex Explainable AI](https://cloud.google.com/vertex-ai/docs/explainable-ai/overview#feature-attributions)",
+    "wrongExplanation": "Why the others are wrong: \nA & D: Traditional ML models like Gradient Boosting or logistic regression are not designed to work directly with raw image data and would perform poorly. \nC: Example-based explanations are useful for finding similar images in the training set but do not highlight the specific pixels or regions *within the input image* that were important, which is the core requirement."
+  },
+  {
+    "number": 113,
+    "title": "Fastest Model Development for Time-Series Forecasting with Covariates",
+    "level": 2,
+    "services": ["Vertex AI AutoML Forecasting", "BigQuery ML"],
+    "scenario": "A hospital needs to predict the daily number of beds required for patients based on the number of surgeries scheduled for that day. They have a year of daily historical data for both metrics. The goal is to build an accurate forecasting model with the maximum speed of development and testing.",
+    "questionText": "Which modeling approach should you choose?",
+    "isMultiChoice": 0,
+    "options": [
+      {
+        "letter": "A",
+        "text": "Use BigQuery ML to build a multiple linear regression model, with 'number of beds' as the target and 'number of surgeries' and date-based features as predictors."
+      },
+      {
+        "letter": "B",
+        "text": "Use BigQuery ML to build a univariate `ARIMA_PLUS` model, using only the 'number of beds' and the date."
+      },
+      {
+        "letter": "C",
+        "text": "Use Vertex AI AutoML Forecasting, defining 'number of beds' as the target series, the date as the time column, and 'number of scheduled surgeries' as a covariate."
+      },
+      {
+        "letter": "D",
+        "text": "Use Vertex AI AutoML Tabular Regression, treating it as a standard regression problem and ignoring the time-series nature of the data."
+      }
+    ],
+    "correctAnswers": ["C"],
+    "explanation": "Why C is correct: This problem is a classic time-series forecast with a dynamic feature (a covariate). You are predicting a value over time ('beds per day'), and that value is influenced by another time-varying feature ('surgeries per day'). Vertex AI AutoML Forecasting is the service specifically designed for this complexity. It allows you to define a target, a time column, and one or more covariates. AutoML automatically handles the complex temporal dynamics, seasonality, and the influence of the covariates to produce a state-of-the-art model with minimal effort, thus maximizing development speed. \n\nOfficial Documentation: [Forecasting on tabular data overview](https://cloud.google.com/vertex-ai/docs/tabular-data/forecasting/overview)",
+    "wrongExplanation": "Why the others are wrong: \nA & D: A standard regression model completely ignores the temporal dependencies and ordering of the data (e.g., that today's bed count is related to yesterday's). This will lead to a suboptimal and likely inaccurate model. \nB: A standard ARIMA model is univariate and cannot incorporate the 'number of scheduled surgeries' as a predictive feature (covariate), which is a key piece of information in the problem."
+  },
+  {
+    "number": 114,
+    "title": "Creating a Training Pipeline for an Existing TensorFlow Model and SQL Preprocessing",
+    "level": 3,
+    "services": ["Vertex AI Pipelines", "Kubeflow Pipelines (KFP)", "TensorFlow Extended (TFX)", "BigQuery"],
+    "scenario": "You have an existing wide and deep TensorFlow model and a separate SQL script that performs all necessary instance-level preprocessing on raw data in BigQuery. You need to create an automated weekly retraining pipeline for this model, which will be used for daily batch recommendations. Your goal is to productionize this workflow with minimal development time by reusing the existing assets.",
+    "questionText": "How should you design the training pipeline?",
+    "isMultiChoice": 0,
+    "options": [
+      {
+        "letter": "A",
+        "text": "Use the Kubeflow Pipelines (KFP) SDK. Create a pipeline that uses the pre-built `BigqueryQueryJobOp` component to execute your existing SQL script, and then passes the output to a `CustomTrainingJobOp` to train the TensorFlow model."
+      },
+      {
+        "letter": "B",
+        "text": "Rewrite the SQL preprocessing logic as a Python Apache Beam script. Use the KFP SDK to create a pipeline with a `DataflowPythonJobOp` for preprocessing and a `CustomTrainingJobOp` for training."
+      },
+      {
+        "letter": "C",
+        "text": "Use the TensorFlow Extended (TFX) SDK. Ingest the data using the `BigQueryExampleGen` component and rewrite the SQL logic using `tf.Transform` inside the `Transform` component before passing it to the `Trainer`."
+      },
+      {
+        "letter": "D",
+        "text": "In your TensorFlow training code, embed the preprocessing logic directly within the `input_fn` so that it's executed as part of the training job. Use a simple KFP pipeline to launch the training job."
+      }
+    ],
+    "correctAnswers": ["A"],
+    "explanation": "Why A is correct: The primary constraint is 'minimal development time' by 'reusing existing assets'. The preprocessing logic already exists as a working SQL script. The Kubeflow Pipelines (KFP) SDK offers a pre-built component, `BigqueryQueryJobOp`, which is designed to execute an arbitrary SQL query or script in BigQuery. This allows you to directly incorporate your existing preprocessing step into a pipeline without any code changes. The output of this step can then be seamlessly passed to a `CustomTrainingJobOp` to train your existing TensorFlow model. This is the most direct and lowest-effort path to automation. \n\nOfficial Documentation: [BigqueryQueryJobOp Component](https://google-cloud-pipeline-components.readthedocs.io/en/google-cloud-pipeline-components-2.0.0/google_cloud_pipeline_components.v1.bigquery.html#google_cloud_pipeline_components.v1.bigquery.BigqueryQueryJobOp)",
+    "wrongExplanation": "Why the others are wrong: \nB & C: These options require a significant rewrite of the existing, working SQL preprocessing script into a different framework (Dataflow or TFX Transform). This directly contradicts the goal of minimizing development time. \nD: Embedding preprocessing logic, especially for large datasets, into the `input_fn` is highly inefficient. It means the preprocessing would be re-executed for every training epoch, dramatically increasing training time and cost."
+  },
+  {
+    "number": 115,
+    "title": "Preventing Training-Serving Skew for a Real-Time Model",
+    "level": 1,
+    "services": ["Dataflow", "Vertex AI Endpoints", "MLOps Concepts"],
+    "scenario": "Your model's training data was preprocessed using a batch Dataflow pipeline. Now, you are deploying this model to a Vertex AI Endpoint for real-time predictions. It is critical that the preprocessing applied to the live prediction data is identical to the preprocessing used during training to avoid performance degradation.",
+    "questionText": "What is the fundamental best practice to ensure this consistency?",
+    "isMultiChoice": 0,
+    "options": [
+      {
+        "letter": "A",
+        "text": "Implement a schema validation step at the endpoint to ensure incoming data has the same format as the raw training data."
+      },
+      {
+        "letter": "B",
+        "text": "Refactor the core transformation logic from the batch pipeline into a shared, importable module. Call this same module from both the training pipeline and the real-time serving application."
+      },
+      {
+        "letter": "C",
+        "text": "Provide the preprocessing code to all client applications and require them to transform the data before calling the endpoint."
+      },
+      {
+        "letter": "D",
+        "text": "In the serving application, micro-batch the incoming real-time requests and send them to the same Dataflow pipeline for preprocessing before making predictions."
+      }
+    ],
+    "correctAnswers": ["B"],
+    "explanation": "Why B is correct: This is the canonical solution to prevent training-serving skew. The principle is 'Don't Repeat Yourself' (DRY). By implementing the preprocessing logic once in a reusable format (like a Python module or library) and then calling that exact same code from both the training environment and the serving environment, you eliminate the possibility of the two implementations drifting apart. This guarantees that the transformations are identical. \n\nOfficial Documentation: [MLOps: Continuous delivery and automation pipelines in machine learning](https://cloud.google.com/architecture/mlops-continuous-delivery-and-automation-pipelines-in-machine-learning#preprocessing_component)",
+    "wrongExplanation": "Why the others are wrong: \nA: Validating the raw input schema is a good practice but does not guarantee the *transformation logic* itself is consistent. Two different codebases could apply different logic to the same valid input. \nC: This is a terrible practice. It places a burden on every client, is impossible to enforce, and makes updating the preprocessing logic a nightmare. \nD: This completely defeats the purpose of 'real-time inference'. Introducing a batch Dataflow job into the serving path would add minutes or hours of latency to each prediction."
+  }
+]

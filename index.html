@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Practice Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore-compat.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles for the application */
+        body {
+            font-family: 'Roboto', sans-serif;
+        }
+        /* Styles for the explanation box transition */
+        .explanation-box {
+            transition: opacity 0.5s ease-in-out, max-height 0.5s ease-in-out;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+        }
+        .explanation-box.visible {
+            max-height: 500px; /* Adjust as needed for content */
+            opacity: 1;
+        }
+        /* Styles for the option button states */
+        .option-btn.selected {
+            border-color: #3b82f6; /* blue-500 */
+            border-width: 2px;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+        .option-btn.correct {
+            background-color: #dcfce7; /* green-100 */
+            border-color: #22c55e; /* green-500 */
+            color: #15803d; /* green-700 */
+        }
+        .option-btn.incorrect {
+            background-color: #fee2e2; /* red-100 */
+            border-color: #ef4444; /* red-500 */
+            color: #b91c1c; /* red-700 */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <!-- Main Quiz Container -->
+    <div id="quiz-container" class="container mx-auto p-4 md:p-8" style="max-width: 1500px;">
+        <!-- Header: Title, Score, Timer, Reset -->
+        <header class="bg-white p-4 rounded-lg shadow-md mb-6">
+            <div class="flex flex-wrap justify-between items-center gap-4">
+                <h1 id="main-title" class="text-2xl md:text-3xl font-bold text-gray-700"></h1>
+                <div class="flex items-center gap-3">
+                    <div id="scoreboard" class="text-sm font-semibold bg-blue-100 text-blue-800 px-3 py-1 rounded-lg">Score: 0 / 0</div>
+                    <div id="timer" class="text-sm font-mono bg-gray-200 px-3 py-1 rounded-lg">00:00:00</div>
+                    <button id="reset-quiz-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded-lg transition-colors text-sm">Reset Quiz</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main content for questions -->
+        <main id="questions-wrapper">
+            <!-- Questions will be dynamically injected here by JavaScript -->
+        </main>
+
+        <!-- Navigation Controls -->
+        <nav id="navigation-controls" class="mt-6 flex justify-between items-center bg-white p-3 rounded-lg shadow-md">
+            <button id="prev-btn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed">Previous</button>
+            <div class="flex items-center gap-2">
+                <label for="question-jump" class="text-sm font-medium">Jump to:</label>
+                <select id="question-jump" class="border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></select>
+            </div>
+            <button id="next-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg transition-colors disabled:bg-blue-300 disabled:cursor-not-allowed">Next</button>
+        </nav>
+    </div>
+    
+    <!-- GDPR/Cookie Consent Modal -->
+    <div id="gdpr-overlay" class="hidden fixed inset-0 bg-black bg-opacity-60 z-40"></div>
+    <div id="gdpr-modal" class="hidden fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-2xl p-6 md:p-8 w-11/12 md:max-w-lg z-50">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Privacy & Cookie Notice</h2>
+        <div class="text-gray-700 space-y-3">
+            <p>Welcome! This website is for demonstration and testing purposes only.</p>
+            <p>We use a single, functional cookie on this site for one reason: <strong class="font-semibold">to save your quiz progress.</strong></p>
+            <ul class="list-disc list-inside space-y-2 pl-2">
+                <li>This allows you to close the page and resume the quiz later exactly where you left off.</li>
+                <li>This cookie is automatically deleted when you click the <strong class="font-semibold">"Reset Quiz"</strong> button.</li>
+                <li>We <strong class="font-semibold">do not</strong> use any tracking, advertising, or analytics cookies. Your activity is not monitored or shared.</li>
+            </ul>
+            <p class="mt-4">By clicking "Accept and Continue," you acknowledge and agree to the use of this functional cookie.</p>
+        </div>
+        <div class="mt-6 text-right">
+            <button id="accept-gdpr-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg transition-colors">Accept and Continue</button>
+        </div>
+    </div>
+
+    <!-- Reset Confirmation Modal -->
+    <div id="reset-confirm-overlay" class="hidden fixed inset-0 bg-black bg-opacity-60 z-40"></div>
+    <div id="reset-confirm-modal" class="hidden fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-2xl p-6 md:p-8 w-11/12 md:max-w-md z-50">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">Confirm Reset</h2>
+        <p class="text-gray-700">Are you sure you want to reset the quiz? All your progress will be lost.</p>
+        <div class="mt-6 flex justify-end gap-4">
+            <button id="cancel-reset-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg transition-colors">Cancel</button>
+            <button id="confirm-reset-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-lg transition-colors">Yes, Reset</button>
+        </div>
+    </div>
+
+    <!-- Main application logic -->
+    <script type="module">
+        //import { collection, getDocs } from 'firebase/firestore';
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyAHgvr5WG50_Et6U_p4UbEfll0NEt1DHTE",
+          authDomain: "tech-certification-training.firebaseapp.com",
+          projectId: "tech-certification-training",
+          storageBucket: "tech-certification-training.firebasestorage.app",
+          messagingSenderId: "848065846796",
+          appId: "1:848065846796:web:531812c64ce046b7379829"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore(); // Using Firestore for questions
+        // --- DATA SOURCE ---
+        let main_title = "Practice Quiz ";
+
+    // Function to fetch questions from Firestore
+    async function fetchQuestionsFromFirestore() {
+         // Fetch the document where 'code' is 'GCP-ML2'
+        const questionSnapshot = await db.collection('questions').where('code', '==', 'GCP-ML').limit(1).get();
+        console.log("questionSnapshot" + questionSnapshot.docs);
+        const questionsList = questionSnapshot.docs.map(doc => doc.data().qa);
+        const platform = questionSnapshot.docs.map(doc => doc.data().platform);
+        const title = questionSnapshot.docs.map(doc => doc.data().title);
+        main_title += title;
+
+
+            // This is just for demonstration to see what you get
+            console.log(title + " " +platform);
+            console.log(questionsList);
+            return questionsList[0];
+        }
+
+
+        let questions = [];
+
+        // --- STATE MANAGEMENT ---
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let userSelections;
+        let answeredCorrectly;
+        
+        // Timer state
+        let timerInterval;
+        let totalSeconds = 0;
+        let inactivityTimer;
+        let userHasInteracted = false;
+
+        // --- DOM ELEMENTS ---
+        const mainTitleEl = document.getElementById('main-title');
+        const scoreboardEl = document.getElementById('scoreboard');
+        const questionsWrapperEl = document.getElementById('questions-wrapper');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const questionJumpEl = document.getElementById('question-jump');
+        const resetQuizBtn = document.getElementById('reset-quiz-btn');
+        const timerEl = document.getElementById('timer');
+        const resetConfirmModal = document.getElementById('reset-confirm-modal');
+        const resetConfirmOverlay = document.getElementById('reset-confirm-overlay');
+        const cancelResetBtn = document.getElementById('cancel-reset-btn');
+        const confirmResetBtn = document.getElementById('confirm-reset-btn');
+
+        // --- COOKIE HELPERS ---
+        function setCookie(name, value, days) {
+            let expires = "";
+            if (days) {
+                const date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (JSON.stringify(value) || "") + expires + "; path=/; SameSite=Lax";
+        }
+
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) == 0) {
+                    try {
+                        return JSON.parse(c.substring(nameEQ.length, c.length));
+                    } catch (e) {
+                        return null;
+                    }
+                }
+            }
+            return null;
+        }
+
+        function deleteCookie(name) {
+            document.cookie = name + '=; Max-Age=-99999999; path=/; SameSite=Lax';
+        }
+
+        // --- STATE PERSISTENCE ---
+        function saveState() {
+            const state = {
+                currentQuestionIndex,
+                score,
+                userSelections,
+                answeredCorrectly,
+                totalSeconds
+            };
+            setCookie('quizState', state, 7);
+        }
+
+        function loadState() {
+            const savedState = getCookie('quizState');
+            if (savedState) {
+                currentQuestionIndex = savedState.currentQuestionIndex || 0;
+                score = savedState.score || 0;
+                userSelections = savedState.userSelections || Array(questions.length).fill(null).map(() => []);
+                answeredCorrectly = savedState.answeredCorrectly || Array(questions.length).fill(false);
+                totalSeconds = savedState.totalSeconds || 0;
+                userHasInteracted = true;
+                return true;
+            } 
+            return false;
+        }
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const gdprModal = document.getElementById('gdpr-modal');
+            const gdprOverlay = document.getElementById('gdpr-overlay');
+            const acceptGdprBtn = document.getElementById('accept-gdpr-btn');
+
+            if (!getCookie('gdprAccepted')) {
+                gdprModal.classList.remove('hidden');
+                gdprOverlay.classList.remove('hidden');
+            }
+
+            acceptGdprBtn.addEventListener('click', () => {
+                gdprModal.classList.add('hidden');
+                gdprOverlay.classList.add('hidden');
+                setCookie('gdprAccepted', 'true', 365);
+            });
+
+            userSelections = Array(questions.length).fill(null).map(() => []);
+            answeredCorrectly = Array(questions.length).fill(false);
+
+            const stateLoaded = loadState();
+            setupQuiz();
+            addEventListeners();
+
+            if (stateLoaded) {
+                handleUserInteraction();
+            }
+        });
+
+        async function setupQuiz() {
+            document.title = main_title;
+            //mainTitleEl.textContent = main_title;
+            questionsWrapperEl.innerHTML = '';
+            questionJumpEl.innerHTML = '';
+
+            questions = await fetchQuestionsFromFirestore();
+            mainTitleEl.textContent = main_title;
+            if (!questions || questions.length === 0) {
+                console.error("No questions fetched from Firestore.");
+                // Optionally display an error message to the user
+                return;
+            }
+
+            questions.forEach((q, index) => {
+                renderQuestion(q, index);
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = `Question ${index + 1}`;
+                questionJumpEl.appendChild(option);
+            });
+
+            questions.forEach((q, index) => {
+                const selections = userSelections[index];
+                if (selections && selections.length > 0) {
+                    const qContainer = document.getElementById(`question-${index}`);
+                    selections.forEach(letter => {
+                        const btn = qContainer.querySelector(`.option-btn[data-letter="${letter}"]`);
+                        if (btn) {
+                            btn.classList.add('selected', 'font-bold');
+                        }
+                    });
+                    if (!answeredCorrectly[index]) {
+                         const confirmBtn = qContainer.querySelector('.confirm-btn');
+                         confirmBtn.disabled = userSelections[index].length !== q.correctAnswers.length;
+                    }
+                }
+                if (answeredCorrectly[index]) {
+                    applyConfirmedState(index);
+                }
+            });
+            
+            updateScoreboard();
+            timerEl.textContent = formatTime(totalSeconds);
+            showQuestion(currentQuestionIndex, true);
+        }
+        
+        function addEventListeners() {
+            document.getElementById('quiz-container').addEventListener('click', (e) => {
+                handleUserInteraction();
+                dispatchInteraction(e);
+            });
+            document.getElementById('quiz-container').addEventListener('change', (e) => {
+                handleUserInteraction();
+                dispatchInteraction(e);
+            });
+
+            resetQuizBtn.addEventListener('click', showResetModal);
+
+            cancelResetBtn.addEventListener('click', hideResetModal);
+            confirmResetBtn.addEventListener('click', handleResetConfirmation);
+        }
+
+        // --- RENDERING ---
+        function renderQuestion(question, index) {
+            const questionContainer = document.createElement('div');
+            questionContainer.id = `question-${index}`;
+            questionContainer.className = 'question-container bg-white p-6 rounded-lg shadow-md mb-4 hidden';
+
+            const choiceText = `(Choose ${question.correctAnswers.length})`;
+            
+            let levelBadgeClass = '';
+            let levelText = '';
+            if (question.level) {
+                levelText = `Level ${question.level}`;
+                switch (question.level) {
+                    case 1:
+                        levelBadgeClass = 'bg-green-100 text-green-800';
+                        break;
+                    case 2:
+                        levelBadgeClass = 'bg-yellow-100 text-yellow-800';
+                        break;
+                    case 3:
+                        levelBadgeClass = 'bg-red-100 text-red-800';
+                        break;
+                    default:
+                        levelBadgeClass = 'bg-gray-100 text-gray-800';
+                }
+            }
+
+            questionContainer.innerHTML = `
+                <div class="flex justify-between items-center border-b pb-2 mb-4">
+                    <h2 class="text-xl font-bold text-gray-800">Question ${index + 1}</h2>
+                    ${question.level ? `<span class="text-sm font-semibold px-3 py-1 rounded-full ${levelBadgeClass}">${levelText}</span>` : ''}
+                </div>
+                <p class="text-gray-800 text-xl mb-4">${question.scenario}</p>
+                <p class="text-lg font-medium mb-4">${question.questionText} <span class="text-sm font-normal text-gray-500">${question.isMultiChoice ? choiceText : '(Choose one)'}</span></p>
+                <div class="options-grid grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                    ${question.options.map(opt => `
+                        <button class="option-btn w-full text-left p-4 border-2 border-gray-300 rounded-lg hover:bg-gray-100 transition-colors" data-question-index="${index}" data-letter="${opt.letter}">
+                            <span class="font-bold mr-2">${opt.letter}.</span> ${opt.text}
+                        </button>
+                    `).join('')}
+                </div>
+                <div class="mt-4 flex justify-between items-center">
+                    <button class="explanation-btn bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed" data-question-index="${index}" disabled>Explanation</button>
+                    <button class="confirm-btn bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-lg transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed" data-question-index="${index}" disabled>Confirm</button>
+                </div>
+                <div class="explanation-box mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <p class="explanation-text whitespace-pre-wrap text-base"></p>
+                    <p class="wrong-explanation-text whitespace-pre-wrap text-base mt-2"></p>
+                </div>
+            `;
+
+            questionsWrapperEl.appendChild(questionContainer);
+        }
+
+        function applyConfirmedState(index) {
+            const question = questions[index];
+            const selections = userSelections[index];
+            const qContainer = document.getElementById(`question-${index}`);
+            const confirmBtn = qContainer.querySelector('.confirm-btn');
+            const explanationBtn = qContainer.querySelector('.explanation-btn');
+            const optionButtons = qContainer.querySelectorAll('.option-btn');
+
+            confirmBtn.disabled = true;
+            explanationBtn.disabled = false;
+            optionButtons.forEach(btn => btn.disabled = true);
+
+            optionButtons.forEach(btn => {
+                const letter = btn.dataset.letter;
+                if (question.correctAnswers.includes(letter)) {
+                    btn.classList.add('correct');
+                } else if (selections.includes(letter)) {
+                    btn.classList.add('incorrect');
+                }
+            });
+
+            const explanationBox = qContainer.querySelector('.explanation-box');
+            explanationBox.querySelector('.explanation-text').textContent = question.explanation;
+            explanationBox.querySelector('.wrong-explanation-text').textContent = question.wrongExplanation;
+        }
+
+        // --- LOGIC & EVENT HANDLERS ---
+        function handleOptionSelect(selectedBtn) {
+            const index = parseInt(selectedBtn.dataset.questionIndex);
+            const letter = selectedBtn.dataset.letter;
+            const question = questions[index];
+            const parent = selectedBtn.closest('.options-grid');
+
+            if (question.isMultiChoice) {
+                const currentSelections = userSelections[index];
+                const maxSelections = question.correctAnswers.length;
+
+                if (currentSelections.includes(letter)) {
+                    userSelections[index] = currentSelections.filter(l => l !== letter);
+                    selectedBtn.classList.remove('selected', 'font-bold');
+                } else {
+                    if (currentSelections.length >= maxSelections) {
+                        const oldestSelection = userSelections[index].shift();
+                        const oldestBtn = parent.querySelector(`.option-btn[data-letter="${oldestSelection}"]`);
+                        if (oldestBtn) {
+                            oldestBtn.classList.remove('selected', 'font-bold');
+                        }
+                    }
+                    userSelections[index].push(letter);
+                    selectedBtn.classList.add('selected', 'font-bold');
+                }
+            } else {
+                parent.querySelectorAll('.option-btn').forEach(btn => {
+                    btn.classList.remove('selected', 'font-bold');
+                });
+                userSelections[index] = [letter];
+                selectedBtn.classList.add('selected', 'font-bold');
+            }
+            
+            const confirmBtn = document.querySelector(`#question-${index} .confirm-btn`);
+            confirmBtn.disabled = userSelections[index].length !== question.correctAnswers.length;
+            saveState();
+        }
+
+        function handleConfirm(confirmBtn) {
+            const index = parseInt(confirmBtn.dataset.questionIndex);
+            const question = questions[index];
+            const selections = userSelections[index];
+            
+            const sortedSelections = [...selections].sort();
+            const sortedCorrect = [...question.correctAnswers].sort();
+            const isCorrect = JSON.stringify(sortedSelections) === JSON.stringify(sortedCorrect);
+            
+            if (isCorrect && !answeredCorrectly[index]) {
+                score++;
+                updateScoreboard();
+            }
+            
+            answeredCorrectly[index] = true;
+            applyConfirmedState(index);
+            saveState();
+        }
+
+        function handleExplanationClick(btn) {
+            const index = parseInt(btn.dataset.questionIndex);
+            const explanationBox = document.querySelector(`#question-${index} .explanation-box`);
+            explanationBox.classList.toggle('visible');
+        }
+
+        function showQuestion(index, isInitialLoad = false) {
+            if (index < 0 || index >= questions.length) return;
+
+            const allQuestions = document.querySelectorAll('.question-container');
+            allQuestions.forEach(q => q.classList.add('hidden'));
+
+            const newQuestionEl = document.getElementById(`question-${index}`);
+            if (newQuestionEl) newQuestionEl.classList.remove('hidden');
+
+            currentQuestionIndex = index;
+            questionJumpEl.value = index;
+
+            prevBtn.disabled = index === 0;
+            nextBtn.disabled = index === questions.length - 1;
+
+            if (!isInitialLoad) {
+                saveState();
+            }
+        }
+
+        function updateScoreboard() {
+            scoreboardEl.textContent = `Score: ${score} / ${questions.length}`;
+        }
+        
+        function showResetModal() {
+            resetConfirmOverlay.classList.remove('hidden');
+            resetConfirmModal.classList.remove('hidden');
+        }
+
+        function hideResetModal() {
+            resetConfirmOverlay.classList.add('hidden');
+            resetConfirmModal.classList.add('hidden');
+        }
+
+        function handleResetConfirmation() {
+            hideResetModal();
+            deleteCookie('quizState'); 
+            location.reload(); 
+        }
+        
+        // --- TIMER & INACTIVITY FUNCTIONS ---
+        function handleUserInteraction() {
+            if (!userHasInteracted) {
+                userHasInteracted = true;
+            }
+            clearTimeout(inactivityTimer);
+            startTimer();
+            inactivityTimer = setTimeout(stopTimer, 180000); 
+        }
+        
+        function startTimer() {
+            if (timerInterval || !userHasInteracted) return;
+            timerInterval = setInterval(() => {
+                totalSeconds++;
+                timerEl.textContent = formatTime(totalSeconds);
+                saveState();
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+
+        function formatTime(seconds) {
+            const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
+            const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+            const s = (seconds % 60).toString().padStart(2, '0');
+            return `${h}:${m}:${s}`;
+        }
+        
+        // --- EVENT DISPATCHER ---
+        function dispatchInteraction(event) {
+            const target = event.target;
+            
+            const optionBtn = target.closest('.option-btn');
+            if (optionBtn) {
+                handleOptionSelect(optionBtn);
+                return;
+            }
+
+            const confirmBtn = target.closest('.confirm-btn');
+            if (confirmBtn) {
+                handleConfirm(confirmBtn);
+                return;
+            }
+
+            const explanationBtn = target.closest('.explanation-btn');
+            if (explanationBtn) {
+                handleExplanationClick(explanationBtn);
+                return;
+            }
+
+            if (target.id === 'prev-btn') {
+                 showQuestion(currentQuestionIndex - 1);
+            } else if (target.id === 'next-btn') {
+                 showQuestion(currentQuestionIndex + 1);
+            } else if (target.id === 'question-jump') {
+                showQuestion(parseInt(target.value));
+            }
+        }
+    </script>
+</body>
+</html>

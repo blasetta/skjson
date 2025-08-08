@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles for the application */
+body {
+    font-family: 'Roboto', sans-serif;
+}
+/* Styles for the explanation box transition */
+.explanation-box {
+    transition: opacity 0.5s ease-in-out, max-height 0.5s ease-in-out;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+}
+.explanation-box.visible {
+    max-height: 500px; /* Adjust as needed for content */
+    opacity: 1;
+}
+/* Styles for the option button states */
+.option-btn.selected {
+    border-color: #3b82f6; /* blue-500 */
+    border-width: 2px;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+.option-btn.correct {
+    background-color: #dcfce7; /* green-100 */
+    border-color: #22c55e; /* green-500 */
+    color: #15803d; /* green-700 */
+}
+.option-btn.incorrect {
+    background-color: #fee2e2; /* red-100 */
+    border-color: #ef4444; /* red-500 */
+    color: #b91c1c; /* red-700 */
+}

@@ -1,0 +1,19 @@
+{
+  "name": "json",
+  "version": "1.0.0",
+  "description": "A project for a tech certification training quiz.",
+  "license": "ISC",
+  "author": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tailwindcss -i ./src/input.css -o ./public/output.css",
+    "watch": "tailwindcss -i ./src/input.css -o ./public/output.css --watch",
+    "dev": "npm run watch"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.4.0"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.10"
+  }
+}

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Practice Quiz</title>
+    <link href="/output.css" rel="stylesheet">
+    <!-- Firebase SDKs are loaded from Firebase Hosting's reserved URLs -->
+    <script src="/__/firebase/9.1.0/firebase-app-compat.js"></script>
+    <script src="/__/firebase/9.1.0/firebase-firestore-compat.js"></script>
+    <!-- Initialize Firebase -->
+    <script src="/__/firebase/init.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <!-- Main Quiz Container -->
+    <div id="quiz-container" class="container mx-auto p-4 md:p-8" style="max-width: 1500px;">
+        <!-- Header: Title, Score, Timer, Reset -->
+        <header class="bg-white p-4 rounded-lg shadow-md mb-6">
+            <div class="flex flex-wrap justify-between items-center gap-4">
+                <h1 id="main-title" class="text-2xl md:text-3xl font-bold text-gray-700"></h1>
+                <div class="flex items-center gap-3">
+                    <div id="scoreboard" class="text-sm font-semibold bg-blue-100 text-blue-800 px-3 py-1 rounded-lg">Score: 0 / 0</div>
+                    <div id="timer" class="text-sm font-mono bg-gray-200 px-3 py-1 rounded-lg">00:00:00</div>
+                    <button id="reset-quiz-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded-lg transition-colors text-sm">Reset Quiz</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main content for questions -->
+        <main id="questions-wrapper">
+            <!-- Questions will be dynamically injected here by JavaScript -->
+        </main>
+
+        <!-- Navigation Controls -->
+        <nav id="navigation-controls" class="mt-6 flex justify-between items-center bg-white p-3 rounded-lg shadow-md">
+            <button id="prev-btn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed">Previous</button>
+            <div class="flex items-center gap-2">
+                <label for="question-jump" class="text-sm font-medium">Jump to:</label>
+                <select id="question-jump" class="border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></select>
+            </div>
+            <button id="next-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg transition-colors disabled:bg-blue-300 disabled:cursor-not-allowed">Next</button>
+        </nav>
+    </div>
+    
+    <!-- GDPR/Cookie Consent Modal -->
+    <div id="gdpr-overlay" class="hidden fixed inset-0 bg-black bg-opacity-60 z-40"></div>
+    <div id="gdpr-modal" class="hidden fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-2xl p-6 md:p-8 w-11/12 md:max-w-lg z-50">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Privacy & Cookie Notice</h2>
+        <div class="text-gray-700 space-y-3">
+            <p>Welcome! This website is for demonstration and testing purposes only.</p>
+            <p>We use a single, functional cookie on this site for one reason: <strong class="font-semibold">to save your quiz progress.</strong></p>
+            <ul class="list-disc list-inside space-y-2 pl-2">
+                <li>This allows you to close the page and resume the quiz later exactly where you left off.</li>
+                <li>This cookie is automatically deleted when you click the <strong class="font-semibold">"Reset Quiz"</strong> button.</li>
+                <li>We <strong class="font-semibold">do not</strong> use any tracking, advertising, or analytics cookies. Your activity is not monitored or shared.</li>
+            </ul>
+            <p class="mt-4">By clicking "Accept and Continue," you acknowledge and agree to the use of this functional cookie.</p>
+        </div>
+        <div class="mt-6 text-right">
+            <button id="accept-gdpr-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg transition-colors">Accept and Continue</button>
+        </div>
+    </div>
+
+    <!-- Reset Confirmation Modal -->
+    <div id="reset-confirm-overlay" class="hidden fixed inset-0 bg-black bg-opacity-60 z-40"></div>
+    <div id="reset-confirm-modal" class="hidden fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-2xl p-6 md:p-8 w-11/12 md:max-w-md z-50">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">Confirm Reset</h2>
+        <p class="text-gray-700">Are you sure you want to reset the quiz? All your progress will be lost.</p>
+        <div class="mt-6 flex justify-end gap-4">
+            <button id="cancel-reset-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg transition-colors">Cancel</button>
+            <button id="confirm-reset-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-lg transition-colors">Yes, Reset</button>
+        </div>
+    </div>
+
+    <!-- Main application logic -->
+    <script type="module" src="test.js"></script>
+</body>
+</html>

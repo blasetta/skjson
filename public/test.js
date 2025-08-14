@@ -7,8 +7,14 @@
 let main_title = "Practice Quiz ";
 
 // --- CONSTANTS ---
-// This will be replaced with your actual Cloud Run URL after deployment.
-const API_BASE_URL = 'https://quiz-api-848065846796.us-central1.run.app'; // IMPORTANT: Paste your actual Cloud Run URL here
+// Automatically switch between the local emulator URL and the deployed, proxied URL.
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+// When running `firebase emulators:start`, the API function is available at a direct local URL.
+// The project ID is 'ai-training-rw4p4' from your .firebaserc file.
+const API_BASE_URL = isLocal
+    ? 'http://127.0.0.1:5001/ai-training-rw4p4/us-central1/api' // Local emulator URL
+    : '/api'; // Deployed URL (proxied by Firebase Hosting to Cloud Run)
 
 // --- HELPERS ---
 
@@ -19,6 +25,15 @@ const API_BASE_URL = 'https://quiz-api-848065846796.us-central1.run.app'; // IMP
 function getQuizCodeFromURL() {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get('quiz');
+}
+
+/**
+ * Gets the token from the URL query parameter.
+ * @returns {string|null} The token or null if not present.
+ */
+function getTokenFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('token');
 }
 
 // Function to fetch questions from the new API
@@ -54,6 +69,63 @@ async function fetchQuestionsFromApi(quizCode) {
     } catch (error) {
         console.error("Failed to fetch from API:", error);
         return { error: "Could not connect to the quiz API. Is it running?" };
+    }
+}
+
+/**
+ * Authenticates the user by validating the token with the API.
+ * @param {string} token The user's token from the URL.
+ * @returns {Promise<Object|null>} The user data object if successful, null otherwise.
+ */
+async function authenticateUser(token) {
+    const apiUrl = `${API_BASE_URL}/auth/${token}`;
+    console.log(`Authenticating with API: ${apiUrl}`);
+
+    try {
+        const response = await fetch(apiUrl);
+
+        // If the response is not OK (e.g., 404, 500), handle it as an error.
+        if (!response.ok) {
+            const contentType = response.headers.get("content-type");
+            let errorMsg = `Server returned status ${response.status}.`;
+
+            // Try to get a more specific error message if the server sent one in JSON format.
+            if (contentType && contentType.includes("application/json")) {
+                const errorData = await response.json();
+                errorMsg = errorData.error || JSON.stringify(errorData);
+            } else {
+                // If the response is not JSON (e.g., an HTML 404 page), log it for debugging.
+                const textError = await response.text();
+                console.error("Server returned a non-JSON error response:", textError.substring(0, 500)); // Log first 500 chars
+                errorMsg = "Could not connect to the authentication service. It may be down or the URL may be incorrect.";
+            }
+
+            console.error("Authentication Error:", errorMsg);
+            mainTitleEl.textContent = "Authentication Failed";
+            questionsWrapperEl.innerHTML = `<div class="text-center p-8 bg-white rounded-lg shadow-md"><h2 class="text-2xl font-bold text-red-600 mb-4">Access Denied</h2><p class="text-gray-700">${errorMsg}</p></div>`;
+            document.getElementById('navigation-controls').classList.add('hidden');
+            return null;
+        }
+
+        // If response is OK, we expect JSON.
+        const data = await response.json();
+        console.log("Authentication successful. Full response:", data);
+
+        // Display user's name. Assuming the user object has a 'name' property.
+        const welcomeEl = document.createElement('p');
+        welcomeEl.className = 'text-center text-lg text-gray-700 mb-4';
+        welcomeEl.textContent = `Welcome, ${data.user.name || 'User'}!`;
+        mainTitleEl.after(welcomeEl); // Inserts the welcome message right after the main title
+
+        return data.user;
+
+    } catch (error) {
+        // This catch block now primarily handles network errors (e.g., DNS, CORS, server unreachable) or JSON parsing errors for successful (2xx) responses.
+        console.error("Network or other error during authentication:", error);
+        mainTitleEl.textContent = "Authentication Error";
+        questionsWrapperEl.innerHTML = `<div class="text-center p-8 bg-white rounded-lg shadow-md"><h2 class="text-2xl font-bold text-red-600 mb-4">API Connection Error</h2><p class="text-gray-700">Could not connect to the authentication service.</p></div>`;
+        document.getElementById('navigation-controls').classList.add('hidden');
+        return null;
     }
 }
 
@@ -167,16 +239,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function setupQuiz() {
     const quizCode = getQuizCodeFromURL();
+    const token = getTokenFromURL();
 
-    if (!quizCode) {
-        mainTitleEl.textContent = "No Quiz Selected";
-        questionsWrapperEl.innerHTML = `<div class="text-center p-8 bg-white rounded-lg shadow-md">
-            <h2 class="text-2xl font-bold text-red-600 mb-4">Quiz Not Found</h2>
-            <p class="text-gray-700">Please specify a quiz code in the URL.</p>
-            <p class="text-gray-500 mt-2">Example: <code>/test.html?quiz=GCP-ML</code></p>
-        </div>`;
-        document.getElementById('navigation-controls').classList.add('hidden');
-        return;
+    const path = window.location.pathname;
+    const isIndexPage = path === '/' || path.endsWith('/index.html');
+
+    if (isIndexPage) {
+        // For the main page (index.html), both quiz and token are required.
+        // If either is missing, redirect to the 404 page.
+        if (!quizCode || !token) {
+            window.location.href = '/404.html';
+            return;
+        }
+
+        // On the main page, first authenticate the user with the token.
+        const user = await authenticateUser(token);
+        if (!user) {
+            // Stop quiz setup if authentication fails. The error is already displayed.
+            return;
+        }
+
+    } else {
+        // For test.html, only check for quiz code for testing purposes.
+        if (!quizCode) {
+            mainTitleEl.textContent = "No Quiz Selected";
+            questionsWrapperEl.innerHTML = `<div class="text-center p-8 bg-white rounded-lg shadow-md">
+                <h2 class="text-2xl font-bold text-red-600 mb-4">Quiz Not Found</h2>
+                <p class="text-gray-700">Please specify a quiz code in the URL.</p>
+                <p class="text-gray-500 mt-2">Example: <code>/test.html?quiz=GCP-ML</code></p>
+            </div>`;
+            document.getElementById('navigation-controls').classList.add('hidden');
+            return;
+        }
     }
 
     const fetchedData = await fetchQuestionsFromApi(quizCode);
